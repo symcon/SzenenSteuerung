@@ -10,6 +10,7 @@ class SzenenSteuerung extends IPSModule
 		//Properties
 		$this->RegisterPropertyInteger("SceneCount", 5);
 		$this->RegisterAttributeString("SceneData", "[]");
+		$this->RegisterPropertyString("VariablesToSwitch", "[]");
 
 
 		if (!IPS_VariableProfileExists("SZS.SceneControl")) {
@@ -131,17 +132,17 @@ class SzenenSteuerung extends IPSModule
 		$targetIDs = IPS_GetObjectIDByIdent("Targets", $this->InstanceID);
 		$data = array();
 
-		//We want to save all Lamp Values
-		foreach (IPS_GetChildrenIDs($targetIDs) as $TargetID) {
-			//only allow links
-			if (IPS_LinkExists($TargetID)) {
-				$linkVariableID = IPS_GetLink($TargetID)['TargetID'];
-				if (IPS_VariableExists($linkVariableID)) {
-					$data[$linkVariableID] = GetValue($linkVariableID);
-				}
-			}
-		}
+		$VariablesToSwitch = json_decode($this->ReadPropertyString("VariablesToSwitch"), true);
 
+		foreach($VariablesToSwitch as $line) {
+			$VarID = $line["VariableID"];
+			if (!IPS_VariableExists($VarID)) {
+				continue;
+			}
+			$data[$VarID] = GetValue($VarID);
+			
+		}
+				
 		$sceneData = json_decode($this->ReadAttributeString("SceneData"));
 
 		$i = intval(substr($SceneIdent, -1));
@@ -160,31 +161,26 @@ class SzenenSteuerung extends IPSModule
 
 		$data = $SceneData[$i - 1];
 
-		if ($data != NULL) {
-			foreach ($data as $id => $value) {
-				if (IPS_VariableExists($id)) {
-					$o = IPS_GetObject($id);
-					$v = IPS_GetVariable($id);
-
-					if ($v['VariableCustomAction'] > 0) {
-						$actionID = $v['VariableCustomAction'];
-					} else {
-						$actionID = $v['VariableAction'];
-					}
-					//Skip this device if we do not have a proper id
-					if ($actionID < 10000)
-						continue;
-
-					if (IPS_InstanceExists($actionID)) {
-						IPS_RequestAction($actionID, $o['ObjectIdent'], $value);
-					} else if (IPS_ScriptExists($actionID)) {
-						echo IPS_RunScriptWaitEx($actionID, array("VARIABLE" => $id, "VALUE" => $value));
-					}
-				}
+		foreach ($data as $key => $value) {
+			if (!IPS_VariableExists($key)) {
+				continue;
 			}
-		} else {
-			echo "No SceneData for this Scene";
+
+			$v = IPS_GetVariable($key);
+
+			if ($v['VariableCustomAction'] > 0) {
+				$actionID = $v['VariableCustomAction'];
+			} else {
+				$actionID = $v['VariableAction'];
+			}
+			//Skip this device if we do not have a proper id
+			if ($actionID < 10000) {
+				continue;
+			}
+
+			RequestAction($key, $value);
 		}
+		
 	}
 
 	private function CreateCategoryByIdent($id, $ident, $name)

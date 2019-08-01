@@ -1,7 +1,31 @@
 {
-  "elements":
-  [
-	{ "type": "Label", "label": "Number of Scenes" },
-	{ "type": "NumberSpinner", "name": "SceneCount", "caption": "Scenes" }
+  "elements": [
+    {
+      "type": "Label",
+      "label": "Number of Scenes"
+    },
+    {
+      "type": "NumberSpinner",
+      "name": "SceneCount",
+      "caption": "Scenes"
+    },
+    {
+      "type": "List",
+      "name": "VariablesToSwitch",
+      "caption": "Variables",
+      "add": true,
+      "delete": true,
+      "columns": [
+        {
+           "caption": "Variable",
+          "name": "VariableID",
+          "width": "auto",
+          "add": 0,
+          "edit": {
+            "type": "SelectVariable"
+          }
+        }
+      ]
+    }
   ]
 }
