@@ -134,15 +134,14 @@ class SzenenSteuerung extends IPSModule
 
 		$VariablesToSwitch = json_decode($this->ReadPropertyString("VariablesToSwitch"), true);
 
-		foreach($VariablesToSwitch as $line) {
+		foreach ($VariablesToSwitch as $line) {
 			$VarID = $line["VariableID"];
 			if (!IPS_VariableExists($VarID)) {
 				continue;
 			}
 			$data[$VarID] = GetValue($VarID);
-			
 		}
-				
+
 		$sceneData = json_decode($this->ReadAttributeString("SceneData"));
 
 		$i = intval(substr($SceneIdent, -1));
@@ -180,7 +179,6 @@ class SzenenSteuerung extends IPSModule
 
 			RequestAction($key, $value);
 		}
-		
 	}
 
 	private function CreateCategoryByIdent($id, $ident, $name)
