@@ -126,7 +126,6 @@ class SzenenSteuerung extends IPSModule
 			} else {
 				break;
 			}
-
 		}
 	}
 
