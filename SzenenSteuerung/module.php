@@ -204,12 +204,6 @@ class SzenenSteuerung extends IPSModule
 					RequestAction($id, $value);
 				}
 			}
-			//Skip this device if we do not have a proper id
-			if ($actionID < 10000) {
-				continue;
-			}
-
-			RequestAction($id, $value);
 		}
 	}
 
