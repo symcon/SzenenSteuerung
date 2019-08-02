@@ -33,24 +33,29 @@ class SzenenSteuerung extends IPSModule
 		//Never delete this line!
 		parent::ApplyChanges();
 
-		$TargetID = @$this->GetIDForIdent("Targets");
+		//Transfer data from Target Category(legacy) to recent List
+		if ($this->ReadPropertyString("VariablesToSwitch") == "[]") {
+			$TargetID = @$this->GetIDForIdent("Targets");
 
-		/*if ($TargetID) {
+			if ($TargetID) {
 
+				$Variables = [];
+				foreach (IPS_GetChildrenIDs($TargetID) as $ChildrenID) {
+					$targetID = IPS_GetLink($ChildrenID)["TargetID"];
+					$line = [
+						"VariableID" => $targetID
+					];
+					array_push($Variables, $line);
+					IPS_DeleteLink($ChildrenID);
+				}
 
-			foreach (IPS_GetChildrenIDs($TargetID) as $ChildrenID) {
-
-				$Variables = json_decode($this->ReadPropertyString("VariablesToSwitch"));
-				array_push($Variables, $ChildrenID);
-				IPS_DeleteLink($ChildrenID);
-				//$this->WritePropertyString("VariablesToSwitch", json_encode($Variables));
+				IPS_DeleteCategory($TargetID);
+				IPS_SetProperty($this->InstanceID, "VariablesToSwitch", json_encode($Variables));
+				IPS_ApplyChanges($this->InstanceID);
+				return;
 			}
+		}
 
-			IPS_DeleteCategory($TargetID);
-		}*/
-
-
-		//$this->CreateCategoryByIdent($this->InstanceID, "Targets", "Targets");
 
 		for ($i = 1; $i <= $this->ReadPropertyInteger("SceneCount"); $i++) {
 			$variableID = $this->RegisterVariableInteger("Scene" . $i, "Scene" . $i, "SZS.SceneControl");
