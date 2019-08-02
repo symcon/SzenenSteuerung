@@ -58,7 +58,9 @@ class SzenenSteuerung extends IPSModule
 			SetValue($variableID, 2);
 		}
 
-		for ($k = 1; $k <= $this->ReadPropertyInteger("SceneCount"); $k++) {
+		//Import from WDDX data into new JSON data
+
+		for ($i = 1; $i <= $this->ReadPropertyInteger("SceneCount"); $i++) {
 			$SceneDataID = @$this->GetIDForIdent("Scene" . $i . "Data");
 			if ($SceneDataID && function_exists("wddx_deserialize")) {
 
@@ -68,51 +70,58 @@ class SzenenSteuerung extends IPSModule
 				}
 			}
 		}
-		$SceneData = json_decode($this->ReadAttributeString("SceneData"));
 
+		//Import JSON Data from Data Variables into Attribute and cleanup Data Variables
+
+		$SceneData = json_decode($this->ReadAttributeString("SceneData"));
+		
+		//If older versions contain errors regarding SceneData SceneControl would become unusable otherwise, even in fixed versions
 		if (!is_array($SceneData)) {
 			$SceneData = [];
 		}
 
-		for ($i = 1; $i <= $this->ReadPropertyInteger("SceneCount"); $i++) {
+		//Preparing SceneData for later use
+
+		$SceneCount = $this->ReadPropertyInteger("SceneCount");
+
+		for ($i = 1; $i <= $SceneCount; $i++) {
+			if (!array_key_exists($i - 1, $SceneData)) {
+				$SceneData[$i - 1] = new stdClass;
+			}
+			if (!@$this->GetIDForIdent("Scene" . $i)) {
+				$this->RegisterStringVariable("Scene" . $i);
+			}
+		}
+
+		for ($i = 1; $i <= $SceneCount; $i++) {
 			$ObjectID = @$this->GetIDForIdent("Scene" . $i . "Data");
 			if (!array_key_exists($i - 1, $SceneData)) {
 				if ($ObjectID) {
 					$decodedSceneData = json_decode(GetValue($ObjectID));
 					if ($decodedSceneData) {
 						$SceneData[$i - 1] = $decodedSceneData;
-					} else {
-						$SceneData[$i - 1] = new stdClass;
 					}
-				} else {
-					$SceneData[$i - 1] = new stdClass;
+					$this->UnregisterVariable("Scene" . $i . "Data");
 				}
-			}
-
-			if ($ObjectID) {
-				$this->UnregisterVariable("Scene" . $i . "Data");
-			}
-
-			if (!@$this->GetIDForIdent("Scene" . $i)) {
-				$this->RegisterStringVariable("Scene" . $i);
 			}
 		}
 
+		//deleting surplus data in SceneData
+		$SceneData = array_slice($SceneData, 0, $SceneCount);
 		$this->WriteAttributeString("SceneData", json_encode($SceneData));
 
-		$SceneCount = $this->ReadPropertyInteger("SceneCount") + 1;
-
-
-		for ($i = $SceneCount;; $i++) {
+		//deleting surplus variables
+		for ($i = $SceneCount + 1;; $i++) {
 			if (@$this->GetIDForIdent("Scene" . $i)) {
 				$this->UnregisterVariable("Scene" . $i);
-
+				//including Legacy data
 				if (@$this->GetIDForIdent("Scene" . $i . "Data")) {
 					$this->UnregisterVariable("Scene" . $i . "Data");
 				}
 			} else {
 				break;
 			}
+
 		}
 	}
 
@@ -147,7 +156,7 @@ class SzenenSteuerung extends IPSModule
 	{
 
 		$targetIDs = IPS_GetObjectIDByIdent("Targets", $this->InstanceID);
-		$data = array();
+		$data = [];
 
 		$VariablesToSwitch = json_decode($this->ReadPropertyString("VariablesToSwitch"), true);
 
@@ -177,24 +186,30 @@ class SzenenSteuerung extends IPSModule
 
 		$data = $SceneData[$i - 1];
 
-		foreach ($data as $key => $value) {
-			if (!IPS_VariableExists($key)) {
-				continue;
-			}
+		if ($data != NULL) {
+			foreach ($data as $id => $value) {
+				if (IPS_VariableExists($id)) {
 
-			$v = IPS_GetVariable($key);
+					$v = IPS_GetVariable($id);
 
-			if ($v['VariableCustomAction'] > 0) {
-				$actionID = $v['VariableCustomAction'];
-			} else {
-				$actionID = $v['VariableAction'];
+					if ($v['VariableCustomAction'] > 0) {
+						$actionID = $v['VariableCustomAction'];
+					} else {
+						$actionID = $v['VariableAction'];
+					}
+					//Skip this device if we do not have a proper id
+					if ($actionID < 10000)
+						continue;
+
+					RequestAction($id, $value);
+				}
 			}
 			//Skip this device if we do not have a proper id
 			if ($actionID < 10000) {
 				continue;
 			}
 
-			RequestAction($key, $value);
+			RequestAction($id, $value);
 		}
 	}
 
