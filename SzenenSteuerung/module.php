@@ -33,7 +33,24 @@ class SzenenSteuerung extends IPSModule
 		//Never delete this line!
 		parent::ApplyChanges();
 
-		$this->CreateCategoryByIdent($this->InstanceID, "Targets", "Targets");
+		$TargetID = @$this->GetIDForIdent("Targets");
+
+		/*if ($TargetID) {
+
+
+			foreach (IPS_GetChildrenIDs($TargetID) as $ChildrenID) {
+
+				$Variables = json_decode($this->ReadPropertyString("VariablesToSwitch"));
+				array_push($Variables, $ChildrenID);
+				IPS_DeleteLink($ChildrenID);
+				//$this->WritePropertyString("VariablesToSwitch", json_encode($Variables));
+			}
+
+			IPS_DeleteCategory($TargetID);
+		}*/
+
+
+		//$this->CreateCategoryByIdent($this->InstanceID, "Targets", "Targets");
 
 		for ($i = 1; $i <= $this->ReadPropertyInteger("SceneCount"); $i++) {
 			$variableID = $this->RegisterVariableInteger("Scene" . $i, "Scene" . $i, "SZS.SceneControl");
