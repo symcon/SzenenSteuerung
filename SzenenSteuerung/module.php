@@ -159,7 +159,6 @@ class SzenenSteuerung extends IPSModule
 	private function SaveValues($SceneIdent)
 	{
 
-		$targetIDs = IPS_GetObjectIDByIdent("Targets", $this->InstanceID);
 		$data = [];
 
 		$VariablesToSwitch = json_decode($this->ReadPropertyString("VariablesToSwitch"), true);
@@ -211,15 +210,4 @@ class SzenenSteuerung extends IPSModule
 		}
 	}
 
-	private function CreateCategoryByIdent($id, $ident, $name)
-	{
-		$cid = @IPS_GetObjectIDByIdent($ident, $id);
-		if ($cid === false) {
-			$cid = IPS_CreateCategory();
-			IPS_SetParent($cid, $id);
-			IPS_SetName($cid, $name);
-			IPS_SetIdent($cid, $ident);
-		}
-		return $cid;
-	}
 }
