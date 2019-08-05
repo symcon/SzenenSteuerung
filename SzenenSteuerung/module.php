@@ -65,19 +65,7 @@ class SzenenSteuerung extends IPSModule
 			$this->EnableAction("Scene" . $i);
 			SetValue($variableID, 2);
 		}
-
-		//Import from WDDX data into new JSON data
-		for ($i = 1; $i <= $SceneCount; $i++) {
-			$SceneDataID = @$this->GetIDForIdent("Scene" . $i . "Data");
-			if ($SceneDataID && function_exists("wddx_deserialize")) {
-
-				$data = wddx_deserialize(GetValue($SceneDataID));
-				if ($data !== NULL) {
-					SetValue($SceneDataID, json_encode($data));
-				}
-			}
-		}
-				
+						
 		$SceneData = json_decode($this->ReadAttributeString("SceneData"));
 		
 		//If older versions contain errors regarding SceneData SceneControl would become unusable otherwise, even in fixed versions
@@ -92,29 +80,25 @@ class SzenenSteuerung extends IPSModule
 			if (!array_key_exists($i - 1, $SceneData)) {
 				$SceneData[$i - 1] = new stdClass;
 			}
-			
 		}
-
-		//Getting data from legacy SceneData variables to put them in new SceneData attribute 
+		
+		//Getting data from legacy Scene Data to put them in SceneData attribute (including wddx, JSON)
 		for ($i = 1; $i <= $SceneCount; $i++) {
-			$ObjectID = @$this->GetIDForIdent("Scene" . $i . "Data");
-			if (!array_key_exists($i - 1, $SceneData)) {
-				if ($ObjectID) {
-					$decodedSceneData = json_decode(GetValue($ObjectID));
-					if ($decodedSceneData) {
-						$SceneData[$i - 1] = $decodedSceneData;
-					}
-					$this->UnregisterVariable("Scene" . $i . "Data");
+			$SceneDataID = @$this->GetIDForIdent("Scene" . $i . "Data");
+			if ($SceneDataID) {
+				$decodedSceneData = NULL;
+				if (function_exists("wddx_deserialize")) {
+					$decodedSceneData = wddx_deserialize(GetValue($SceneDataID));
+				} 
+				
+				if ($decodedSceneData == NULL) {
+					$decodedSceneData = json_decode(GetValue($SceneDataID));
 				}
-			}
-		}
 
-		//Deleting SceneData variables used in legacy
-		for ($i = $SceneCount + 1;; $i++) {
-			if (@$this->GetIDForIdent("Scene" . $i . "Data")) {
+				if ($decodedSceneData) {
+					$SceneData[$i - 1] = $decodedSceneData;
+				}
 				$this->UnregisterVariable("Scene" . $i . "Data");
-			} else {
-				break;
 			}
 		}
 
