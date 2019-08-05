@@ -1,6 +1,8 @@
 # Szenensteuerung
 Die Szenensteuerung speichert Werte von verlinkten Variablen in Szenen und kann diese via Knopfdruck aus dem WebFront und mobilen Apps wieder aufrufen.  
-Die zu schaltenden Variablen müssen dazu im "Targets" Ordner verlinkt werden.
+Die zu schaltenden Variablen müssen dazu in der "Targets"-Kategorie als Link hinzugefügt werden.
+Sind alle für eine Szene gewünschten Variablen verlinkt und auf den gewünschten Wert gesetzt, können diese mit dem "Speichern"-Knopf (im Webfront) der entsprechenden Szene hinzugefügt werden.
+Nun kann die Szene mit dem entsprechenden "Ausführen"-Knopf jederzeit abgerufen werden. Die Variablen werden auf die zuvor gespeicherten Werte gesetzt.
 
 ### Inhaltverzeichnis
 
