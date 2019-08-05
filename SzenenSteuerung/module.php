@@ -9,9 +9,9 @@ class SzenenSteuerung extends IPSModule
 
 		//Properties
 		$this->RegisterPropertyInteger("SceneCount", 5);
+		//Attributes
 		$this->RegisterAttributeString("SceneData", "[]");
 		$this->RegisterPropertyString("VariablesToSwitch", "[]");
-
 
 		if (!IPS_VariableProfileExists("SZS.SceneControl")) {
 			IPS_CreateVariableProfile("SZS.SceneControl", 1);
@@ -59,6 +59,7 @@ class SzenenSteuerung extends IPSModule
 
 		$SceneCount = $this->ReadPropertyInteger("SceneCount");
 
+		//Create Scene variables
 		for ($i = 1; $i <= $SceneCount; $i++) {
 			$variableID = $this->RegisterVariableInteger("Scene" . $i, "Scene" . $i, "SZS.SceneControl");
 			$this->EnableAction("Scene" . $i);
@@ -66,7 +67,6 @@ class SzenenSteuerung extends IPSModule
 		}
 
 		//Import from WDDX data into new JSON data
-
 		for ($i = 1; $i <= $SceneCount; $i++) {
 			$SceneDataID = @$this->GetIDForIdent("Scene" . $i . "Data");
 			if ($SceneDataID && function_exists("wddx_deserialize")) {
@@ -77,16 +77,7 @@ class SzenenSteuerung extends IPSModule
 				}
 			}
 		}
-		
-		//deleting SceneData variables used in legacy
-		for ($i = $SceneCount + 1;; $i++) {
-			if (@$this->GetIDForIdent("Scene" . $i . "Data")) {
-				$this->UnregisterVariable("Scene" . $i . "Data");
-			} else {
-				break;
-			}
-		}
-
+				
 		$SceneData = json_decode($this->ReadAttributeString("SceneData"));
 		
 		//If older versions contain errors regarding SceneData SceneControl would become unusable otherwise, even in fixed versions
@@ -95,7 +86,6 @@ class SzenenSteuerung extends IPSModule
 		}
 
 		//Preparing SceneData for later use
-
 		$SceneCount = $this->ReadPropertyInteger("SceneCount");
 
 		for ($i = 1; $i <= $SceneCount; $i++) {
@@ -105,7 +95,7 @@ class SzenenSteuerung extends IPSModule
 			
 		}
 
-		//getting data from legacy SceneData variables to put them in new SceneData attribute 
+		//Getting data from legacy SceneData variables to put them in new SceneData attribute 
 		for ($i = 1; $i <= $SceneCount; $i++) {
 			$ObjectID = @$this->GetIDForIdent("Scene" . $i . "Data");
 			if (!array_key_exists($i - 1, $SceneData)) {
@@ -119,11 +109,20 @@ class SzenenSteuerung extends IPSModule
 			}
 		}
 
-		//deleting surplus data in SceneData
+		//Deleting SceneData variables used in legacy
+		for ($i = $SceneCount + 1;; $i++) {
+			if (@$this->GetIDForIdent("Scene" . $i . "Data")) {
+				$this->UnregisterVariable("Scene" . $i . "Data");
+			} else {
+				break;
+			}
+		}
+
+		//Deleting surplus data in SceneData
 		$SceneData = array_slice($SceneData, 0, $SceneCount);
 		$this->WriteAttributeString("SceneData", json_encode($SceneData));
 
-		//deleting surplus variables
+		//Deleting surplus variables
 		for ($i = $SceneCount + 1;; $i++) {
 			if (@$this->GetIDForIdent("Scene" . $i)) {
 				$this->UnregisterVariable("Scene" . $i);
@@ -188,13 +187,13 @@ class SzenenSteuerung extends IPSModule
 	private function CallValues($SceneIdent)
 	{
 
-		$SceneData = json_decode($this->ReadAttributeString("SceneData"));
+		$SceneData = json_decode($this->ReadAttributeString("SceneData"), true);
 
 		$i = intval(substr($SceneIdent, -1));
 
 		$data = $SceneData[$i - 1];
 
-		if ($data != NULL) {
+		if (count($data) > 0) {
 			foreach ($data as $id => $value) {
 				if (IPS_VariableExists($id)) {
 
