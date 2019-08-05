@@ -195,6 +195,8 @@ class SzenenSteuerung extends IPSModule
 					RequestAction($id, $value);
 				}
 			}
+		} else {
+			echo "No SceneData for this Scene";
 		}
 	}
 
