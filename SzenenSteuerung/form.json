@@ -11,13 +11,13 @@
     },
     {
       "type": "List",
-      "name": "VariablesToSwitch",
+      "name": "Targets",
       "caption": "Variables",
       "add": true,
       "delete": true,
       "columns": [
         {
-           "caption": "Variable",
+          "caption": "Variable",
           "name": "VariableID",
           "width": "auto",
           "add": 0,
