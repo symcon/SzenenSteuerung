@@ -9,9 +9,10 @@ class SzenenSteuerung extends IPSModule
 
 		//Properties
 		$this->RegisterPropertyInteger("SceneCount", 5);
+		$this->RegisterPropertyString("Targets", "[]");
 		//Attributes
 		$this->RegisterAttributeString("SceneData", "[]");
-		$this->RegisterPropertyString("VariablesToSwitch", "[]");
+		
 
 		if (!IPS_VariableProfileExists("SZS.SceneControl")) {
 			IPS_CreateVariableProfile("SZS.SceneControl", 1);
@@ -34,7 +35,7 @@ class SzenenSteuerung extends IPSModule
 		parent::ApplyChanges();
 
 		//Transfer data from Target Category(legacy) to recent List
-		if ($this->ReadPropertyString("VariablesToSwitch") == "[]") {
+		if ($this->ReadPropertyString("Targets") == "[]") {
 			$TargetID = @$this->GetIDForIdent("Targets");
 
 			if ($TargetID) {
@@ -50,7 +51,7 @@ class SzenenSteuerung extends IPSModule
 				}
 
 				IPS_DeleteCategory($TargetID);
-				IPS_SetProperty($this->InstanceID, "VariablesToSwitch", json_encode($Variables));
+				IPS_SetProperty($this->InstanceID, "Targets", json_encode($Variables));
 				IPS_ApplyChanges($this->InstanceID);
 				return;
 			}
@@ -149,9 +150,9 @@ class SzenenSteuerung extends IPSModule
 
 		$data = [];
 
-		$VariablesToSwitch = json_decode($this->ReadPropertyString("VariablesToSwitch"), true);
+		$Targets = json_decode($this->ReadPropertyString("Targets"), true);
 
-		foreach ($VariablesToSwitch as $line) {
+		foreach ($Targets as $line) {
 			$VarID = $line["VariableID"];
 			if (!IPS_VariableExists($VarID)) {
 				continue;
