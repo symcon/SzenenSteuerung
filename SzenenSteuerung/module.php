@@ -197,7 +197,7 @@ class SzenenSteuerung extends IPSModule
 				}
 			}
 		} else {
-			echo "No SceneData for this Scene";
+			echo $this->Translate("No SceneData for this Scene");
 		}
 	}
 
