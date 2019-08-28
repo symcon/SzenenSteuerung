@@ -155,7 +155,7 @@ class SzenenSteuerung extends IPSModule
 
         $sceneData = json_decode($this->ReadAttributeString('SceneData'));
 
-        $i = intval(substr($SceneIdent, -1));
+        $i = (int) filter_var($SceneIdent, FILTER_SANITIZE_NUMBER_INT);
 
         $sceneData[$i - 1] = $data;
 
@@ -166,7 +166,7 @@ class SzenenSteuerung extends IPSModule
     {
         $SceneData = json_decode($this->ReadAttributeString('SceneData'), true);
 
-        $i = intval(substr($SceneIdent, -1));
+        $i = (int) filter_var($SceneIdent, FILTER_SANITIZE_NUMBER_INT);
 
         $data = $SceneData[$i - 1];
 
