@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 class SzenenSteuerung extends IPSModule
 {
     public function Create()
@@ -7,18 +9,17 @@ class SzenenSteuerung extends IPSModule
         parent::Create();
 
         //Properties
-        $this->RegisterPropertyInteger("SceneCount", 5);
-        $this->RegisterPropertyString("Targets", "[]");
+        $this->RegisterPropertyInteger('SceneCount', 5);
+        $this->RegisterPropertyString('Targets', '[]');
         //Attributes
-        $this->RegisterAttributeString("SceneData", "[]");
-        
+        $this->RegisterAttributeString('SceneData', '[]');
 
-        if (!IPS_VariableProfileExists("SZS.SceneControl")) {
-            IPS_CreateVariableProfile("SZS.SceneControl", 1);
-            IPS_SetVariableProfileValues("SZS.SceneControl", 1, 2, 0);
+        if (!IPS_VariableProfileExists('SZS.SceneControl')) {
+            IPS_CreateVariableProfile('SZS.SceneControl', 1);
+            IPS_SetVariableProfileValues('SZS.SceneControl', 1, 2, 0);
             //IPS_SetVariableProfileIcon("SZS.SceneControl", "");
-            IPS_SetVariableProfileAssociation("SZS.SceneControl", 1, "Speichern", "", -1);
-            IPS_SetVariableProfileAssociation("SZS.SceneControl", 2, "Ausführen", "", -1);
+            IPS_SetVariableProfileAssociation('SZS.SceneControl', 1, 'Speichern', '', -1);
+            IPS_SetVariableProfileAssociation('SZS.SceneControl', 2, 'Ausführen', '', -1);
         }
     }
 
@@ -34,62 +35,61 @@ class SzenenSteuerung extends IPSModule
         parent::ApplyChanges();
 
         //Transfer data from Target Category(legacy) to recent List
-        if ($this->ReadPropertyString("Targets") == "[]") {
-            $TargetID = @$this->GetIDForIdent("Targets");
+        if ($this->ReadPropertyString('Targets') == '[]') {
+            $TargetID = @$this->GetIDForIdent('Targets');
 
             if ($TargetID) {
                 $Variables = [];
                 foreach (IPS_GetChildrenIDs($TargetID) as $ChildrenID) {
-                    $targetID = IPS_GetLink($ChildrenID)["TargetID"];
+                    $targetID = IPS_GetLink($ChildrenID)['TargetID'];
                     $line = [
-                        "VariableID" => $targetID
+                        'VariableID' => $targetID
                     ];
                     array_push($Variables, $line);
                     IPS_DeleteLink($ChildrenID);
                 }
 
                 IPS_DeleteCategory($TargetID);
-                IPS_SetProperty($this->InstanceID, "Targets", json_encode($Variables));
+                IPS_SetProperty($this->InstanceID, 'Targets', json_encode($Variables));
                 IPS_ApplyChanges($this->InstanceID);
                 return;
             }
         }
 
-
-        $SceneCount = $this->ReadPropertyInteger("SceneCount");
+        $SceneCount = $this->ReadPropertyInteger('SceneCount');
 
         //Create Scene variables
         for ($i = 1; $i <= $SceneCount; $i++) {
-            $variableID = $this->RegisterVariableInteger("Scene" . $i, "Scene" . $i, "SZS.SceneControl");
-            $this->EnableAction("Scene" . $i);
+            $variableID = $this->RegisterVariableInteger('Scene' . $i, 'Scene' . $i, 'SZS.SceneControl');
+            $this->EnableAction('Scene' . $i);
             SetValue($variableID, 2);
         }
-                        
-        $SceneData = json_decode($this->ReadAttributeString("SceneData"));
-        
+
+        $SceneData = json_decode($this->ReadAttributeString('SceneData'));
+
         //If older versions contain errors regarding SceneData SceneControl would become unusable otherwise, even in fixed versions
         if (!is_array($SceneData)) {
             $SceneData = [];
         }
 
         //Preparing SceneData for later use
-        $SceneCount = $this->ReadPropertyInteger("SceneCount");
+        $SceneCount = $this->ReadPropertyInteger('SceneCount');
 
         for ($i = 1; $i <= $SceneCount; $i++) {
             if (!array_key_exists($i - 1, $SceneData)) {
-                $SceneData[$i - 1] = new stdClass;
+                $SceneData[$i - 1] = new stdClass();
             }
         }
-        
+
         //Getting data from legacy Scene Data to put them in SceneData attribute (including wddx, JSON)
         for ($i = 1; $i <= $SceneCount; $i++) {
-            $SceneDataID = @$this->GetIDForIdent("Scene" . $i . "Data");
+            $SceneDataID = @$this->GetIDForIdent('Scene' . $i . 'Data');
             if ($SceneDataID) {
                 $decodedSceneData = null;
-                if (function_exists("wddx_deserialize")) {
+                if (function_exists('wddx_deserialize')) {
                     $decodedSceneData = wddx_deserialize(GetValue($SceneDataID));
                 }
-                
+
                 if ($decodedSceneData == null) {
                     $decodedSceneData = json_decode(GetValue($SceneDataID));
                 }
@@ -97,18 +97,18 @@ class SzenenSteuerung extends IPSModule
                 if ($decodedSceneData) {
                     $SceneData[$i - 1] = $decodedSceneData;
                 }
-                $this->UnregisterVariable("Scene" . $i . "Data");
+                $this->UnregisterVariable('Scene' . $i . 'Data');
             }
         }
 
         //Deleting surplus data in SceneData
         $SceneData = array_slice($SceneData, 0, $SceneCount);
-        $this->WriteAttributeString("SceneData", json_encode($SceneData));
+        $this->WriteAttributeString('SceneData', json_encode($SceneData));
 
         //Deleting surplus variables
-        for ($i = $SceneCount + 1;; $i++) {
-            if (@$this->GetIDForIdent("Scene" . $i)) {
-                $this->UnregisterVariable("Scene" . $i);
+        for ($i = $SceneCount + 1; ; $i++) {
+            if (@$this->GetIDForIdent('Scene' . $i)) {
+                $this->UnregisterVariable('Scene' . $i);
             } else {
                 break;
             }
@@ -118,53 +118,53 @@ class SzenenSteuerung extends IPSModule
     public function RequestAction($Ident, $Value)
     {
         switch ($Value) {
-            case "1":
+            case '1':
                 $this->SaveValues($Ident);
                 break;
-            case "2":
+            case '2':
                 $this->CallValues($Ident);
                 break;
             default:
-                throw new Exception("Invalid action");
+                throw new Exception('Invalid action');
         }
     }
 
     public function CallScene(int $SceneNumber)
     {
-        $this->CallValues("Scene" . $SceneNumber);
+        $this->CallValues('Scene' . $SceneNumber);
     }
 
     public function SaveScene(int $SceneNumber)
     {
-        $this->SaveValues("Scene" . $SceneNumber);
+        $this->SaveValues('Scene' . $SceneNumber);
     }
 
     private function SaveValues($SceneIdent)
     {
         $data = [];
 
-        $Targets = json_decode($this->ReadPropertyString("Targets"), true);
+        $Targets = json_decode($this->ReadPropertyString('Targets'), true);
 
         foreach ($Targets as $line) {
-            $VarID = $line["VariableID"];
+            $VarID = $line['VariableID'];
             if (!IPS_VariableExists($VarID)) {
                 continue;
             }
             $data[$VarID] = GetValue($VarID);
         }
 
-        $sceneData = json_decode($this->ReadAttributeString("SceneData"));
+        $sceneData = json_decode($this->ReadAttributeString('SceneData'));
 
         $i = intval(substr($SceneIdent, -1));
 
         $sceneData[$i - 1] = $data;
 
-        $this->WriteAttributeString("SceneData", json_encode($sceneData));
+        $this->WriteAttributeString('SceneData', json_encode($sceneData));
     }
 
     private function CallValues($SceneIdent)
     {
-        $SceneData = json_decode($this->ReadAttributeString("SceneData"), true);
+        $SceneData = json_decode($this->ReadAttributeString('SceneData'), true);
 
         $i = intval(substr($SceneIdent, -1));
 
@@ -189,7 +189,7 @@ class SzenenSteuerung extends IPSModule
                 }
             }
         } else {
-            echo $this->Translate("No saved data for this Scene");
+            echo $this->Translate('No saved data for this Scene');
         }
     }
 }
