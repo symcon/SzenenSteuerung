@@ -30,6 +30,7 @@ class SzenenSteuerungMigrationTest extends TestCase
         //Creating variable to save
         $vid = IPS_CreateVariable(1 /* Integer */);
         IPS_SetVariableCustomAction($vid, $sid);
+        
         //Setting variable and putting it in serialised in SceneData
         $data = [
             $vid => 7
@@ -46,6 +47,7 @@ class SzenenSteuerungMigrationTest extends TestCase
             'SceneCount' => 1,
             'Targets'    => '[]'
         ]));
+
         //Create category with linked variable to be transfered
         $cid = IPS_CreateCategory();
         IPS_SetIdent($cid, 'TargetsCategory');
@@ -54,6 +56,7 @@ class SzenenSteuerungMigrationTest extends TestCase
         IPS_SetLinkTargetID($lid, $vid);
 
         IPS_ApplyChanges($iid);
+
         //checks if all unnecessary links/categorys have been deleted
         $this->assertEquals(1, IPS_GetProperty($iid, 'SceneCount'));
         $this->assertEquals(false, IPS_VariableExists($vdid));

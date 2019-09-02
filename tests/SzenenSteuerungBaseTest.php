@@ -23,13 +23,13 @@ class SzenenSteuerungTest extends TestCase
 
     public function testSaveAndLoadSceneData()
     {
+        //Setting up a variable with ActionScript
         $sid = IPS_CreateScript(0 /* PHP */);
         IPS_SetScriptContent($sid, 'SetValue($_IPS[\'VARIABLE\'], $_IPS[\'VALUE\']);');
-
         $vid = IPS_CreateVariable(1 /* Integer */);
         IPS_SetVariableCustomAction($vid, $sid);
-        SetValue($vid, 42);
 
+        //Creating SzenenSteuerungs instance with custom settings
         $iid = IPS_CreateInstance($this->szenenSteuerungID);
         IPS_SetConfiguration($iid, json_encode([
             'SceneCount' => 1,
@@ -41,30 +41,29 @@ class SzenenSteuerungTest extends TestCase
         ]));
         IPS_ApplyChanges($iid);
 
+        //Checking if all settings have been adopted
         $this->assertEquals(1, IPS_GetProperty($iid, 'SceneCount'));
         $this->assertEquals(json_encode([['VariableID' => $vid]]), IPS_GetProperty($iid, 'Targets'));
 
         $intf = IPS\InstanceManager::getInstanceInterface($iid);
 
+        //Save & Recall value for Scene
         SetValue($vid, 5);
-
         $intf->SaveScene(1);
-        $this->assertEquals(5, GetValue($vid));
-
         SetValue($vid, 22);
         $intf->CallScene(1);
-
         $this->assertEquals(5, GetValue($vid));
     }
 
     public function testManyScenes()
     {
+        //Setting up a variable with ActionScript
         $sid = IPS_CreateScript(0 /* PHP */);
         IPS_SetScriptContent($sid, 'SetValue($_IPS[\'VARIABLE\'], $_IPS[\'VALUE\']);');
-
         $vid = IPS_CreateVariable(1 /* Integer */);
         IPS_SetVariableCustomAction($vid, $sid);
 
+        //Creating SzenenSteuerungs instance
         $iid = IPS_CreateInstance($this->szenenSteuerungID);
         IPS_SetConfiguration($iid, json_encode([
             'SceneCount' => 15,
@@ -76,36 +75,23 @@ class SzenenSteuerungTest extends TestCase
         ]));
         IPS_ApplyChanges($iid);
 
-        $this->assertEquals(15, IPS_GetProperty($iid, 'SceneCount'));
-        $this->assertEquals(json_encode([['VariableID' => $vid]]), IPS_GetProperty($iid, 'Targets'));
-
         $intf = IPS\InstanceManager::getInstanceInterface($iid);
 
-        //Scenen2
+        //Save & Recall value for Scene 2
         SetValue($vid, 10);
-
-        $this->assertEquals(10, GetValue($vid));
-        $intf->SaveScene(2);
-
+        $intf->SaveScene(2);        
         SetValue($vid, 42);
         $intf->CallScene(2);
-
         $this->assertEquals(10, GetValue($vid));
-        //Scene 2
 
-        //Scenen12
+        //Save & Reecall value for Scene 12
         SetValue($vid, 5);
-
         $this->assertEquals(5, GetValue($vid));
         $intf->SaveScene(12);
-
         SetValue($vid, 43);
         $intf->CallScene(12);
 
-        $this->assertEquals(5, GetValue($vid));
-        //Scene 12
-
-        //expecting 10 because 10 should be saved in Scene 2
+        //Verify that recalling Scene 12 does not inerfere with Scene 2 value
         $intf->CallScene(2);
         $this->assertEquals(10, GetValue($vid));
     }
