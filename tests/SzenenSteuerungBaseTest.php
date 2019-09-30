@@ -79,7 +79,7 @@ class SzenenSteuerungTest extends TestCase
 
         //Save & Recall value for Scene 2
         SetValue($vid, 10);
-        $intf->SaveScene(2);        
+        $intf->SaveScene(2);
         SetValue($vid, 42);
         $intf->CallScene(2);
         $this->assertEquals(10, GetValue($vid));

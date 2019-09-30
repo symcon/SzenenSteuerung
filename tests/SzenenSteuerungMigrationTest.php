@@ -30,7 +30,7 @@ class SzenenSteuerungMigrationTest extends TestCase
         //Creating variable to save
         $vid = IPS_CreateVariable(1 /* Integer */);
         IPS_SetVariableCustomAction($vid, $sid);
-        
+
         //Setting variable and putting it in serialised in SceneData
         $data = [
             $vid => 7
