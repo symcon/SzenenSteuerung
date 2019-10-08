@@ -113,6 +113,15 @@ class SzenenSteuerung extends IPSModule
                 break;
             }
         }
+
+        //Add references
+        foreach ($this->GetReferenceList() as $referenceID) {
+            $this->UnregisterReference($referenceID);
+        }
+        $targets = json_decode($this->ReadPropertyString('Targets'));
+        foreach ($targets as $target) {
+            $this->RegisterReference($target->VariableID);
+        }
     }
 
     public function RequestAction($Ident, $Value)
