@@ -183,7 +183,9 @@ class SzenenSteuerung extends IPSModule
             foreach ($data as $id => $value) {
                 if (IPS_VariableExists($id)) {
                     $v = IPS_GetVariable($id);
-
+                    if (GetValue($id) == $value) {
+                        continue;
+                    }
                     if ($v['VariableCustomAction'] > 0) {
                         $actionID = $v['VariableCustomAction'];
                     } else {
