@@ -39,7 +39,6 @@ class SzenenSteuerungMigrationTest extends TestCase
         $vdid = IPS_CreateVariable(3 /* String */);
         IPS_SetIdent($vdid, 'Scene1Data');
         IPS_SetParent($vdid, $iid);
-        SetValue($vdid, wddx_serialize_value($data));
 
         $this->assertEquals($vdid, IPS_GetObjectIDByIdent('Scene1Data', $iid));
 
