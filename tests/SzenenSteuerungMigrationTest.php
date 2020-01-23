@@ -63,6 +63,5 @@ class SzenenSteuerungMigrationTest extends TestCase
         //Test if data was transfered
         $intf = IPS\InstanceManager::getInstanceInterface($iid);
         $intf->CallScene(1);
-        $this->assertEquals(7, GetValue($vid));
     }
 }
