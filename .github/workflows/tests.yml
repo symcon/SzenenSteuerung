@@ -15,7 +15,7 @@ jobs:
     
     - name: Install required PHP version
     - uses: shivammathur/setup-php@v1
-    with:
+      with:
           php-version: '7.3'
     
     - name: Install latest PHPUnit
