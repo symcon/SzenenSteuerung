@@ -31,8 +31,8 @@ Nun kann die Szene mit dem entsprechenden "Ausführen"-Knopf jederzeit abgerufen
 
 ### 4. Einrichten der Instanzen in IP-Symcon
 
-- Unter "Instanz hinzufügen" kann das 'Szenensteuerung'-Modul mithilfe der Schnellsuche gefunden werden.  
-
+- Unter "Instanz hinzufügen" kann das 'Szenensteuerung'-Modul mithilfe des Schnellfilters gefunden werden.
+    - Weitere Informationen zum Hinzufügen von Instanzen in der [Dokumentation der Instanzen](https://www.symcon.de/service/dokumentation/konzepte/instanzen/#Instanz_hinzufügen)
 __Konfigurationsseite__:
 
 Name      | Beschreibung
