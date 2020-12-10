@@ -13,13 +13,17 @@ class SzenenSteuerung extends IPSModule
         $this->RegisterPropertyString('Targets', '[]');
         //Attributes
         $this->RegisterAttributeString('SceneData', '[]');
+        $this->RegisterAttributeBoolean('UpdateActive', true);
+        //Timer
+        $this->RegisterTimer('UpdateTimer', 0, 'SZS_UpdateActive($_IPS[\'TARGET\']);');
 
+        $this->RegisterVariableString('ActiveScene', $this->Translate('Active Scene'), '', -1);
         if (!IPS_VariableProfileExists('SZS.SceneControl')) {
             IPS_CreateVariableProfile('SZS.SceneControl', 1);
             IPS_SetVariableProfileValues('SZS.SceneControl', 1, 2, 0);
             //IPS_SetVariableProfileIcon("SZS.SceneControl", "");
             IPS_SetVariableProfileAssociation('SZS.SceneControl', 1, $this->Translate('Save'), '', -1);
-            IPS_SetVariableProfileAssociation('SZS.SceneControl', 2, $this->Translate('Execute'), '', -1);
+            IPS_SetVariableProfileAssociation('SZS.SceneControl', 2, $this->Translate('Call'), '', -1);
         }
     }
 
@@ -60,7 +64,7 @@ class SzenenSteuerung extends IPSModule
 
         //Create Scene variables
         for ($i = 1; $i <= $sceneCount; $i++) {
-            $variableID = $this->RegisterVariableInteger('Scene' . $i, 'Scene' . $i, 'SZS.SceneControl');
+            $variableID = $this->RegisterVariableInteger('Scene' . $i, sprintf($this->Translate('Scene %d'), $i), 'SZS.SceneControl');
             $this->EnableAction('Scene' . $i);
             SetValue($variableID, 2);
         }
@@ -122,6 +126,27 @@ class SzenenSteuerung extends IPSModule
         foreach ($targets as $target) {
             $this->RegisterReference($target->VariableID);
         }
+
+        //Unregister all messages
+        $messageList = array_keys($this->GetMessageList());
+        foreach ($messageList as $message) {
+            $this->UnregisterMessage($message, VM_UPDATE);
+        }
+
+        //Register messages if neccessary
+        foreach ($targets as $target) {
+            $this->RegisterMessage($target->VariableID, VM_UPDATE);
+        }
+
+        //Set active scene
+        $this->SetValue('ActiveScene', $this->getSceneName($this->GetActiveScene()));
+    }
+
+    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    {
+        if ($Message == VM_UPDATE && $this->ReadAttributeBoolean('UpdateActive')) {
+            $this->SetValue('ActiveScene', $this->getSceneName($this->GetActiveScene()));
+        }
     }
 
     public function RequestAction($Ident, $Value)
@@ -131,7 +156,11 @@ class SzenenSteuerung extends IPSModule
                 $this->SaveValues($Ident);
                 break;
             case '2':
+                $this->WriteAttributeBoolean('UpdateActive', false);
+                $this->SetValue('ActiveScene', sprintf($this->Translate("'%s' is called"), IPS_GetName($this->GetIDForIdent($Ident))));
+                $this->SetTimerInterval('UpdateTimer', 5 * 1000);
                 $this->CallValues($Ident);
+
                 break;
             default:
                 throw new Exception('Invalid action');
@@ -140,12 +169,49 @@ class SzenenSteuerung extends IPSModule
 
     public function CallScene(int $SceneNumber)
     {
-        $this->CallValues('Scene' . $SceneNumber);
+        $this->CallValues("Scene$SceneNumber");
     }
 
     public function SaveScene(int $SceneNumber)
     {
-        $this->SaveValues('Scene' . $SceneNumber);
+        $this->SaveValues("Scene$SceneNumber");
+    }
+
+    public function GetActiveScene()
+    {
+        $scenes = json_decode($this->ReadAttributeString('SceneData'), true);
+        $targets = json_decode($this->ReadPropertyString('Targets'), true);
+        $sceneCount = $this->ReadPropertyInteger('SceneCount');
+        for ($i = 0; $i < $sceneCount; $i++) {
+            $sceneID = -1;
+            foreach ($scenes[$i] as $id => $value) {
+                $sceneID = $i;
+                if (GetValue($id) != $value) {
+                    $sceneID = -1;
+                    break;
+                }
+            }
+            if ($sceneID != -1) {
+                break;
+            }
+        }
+        return $sceneID + 1;
+    }
+
+    public function UpdateActive()
+    {
+        $this->SetTimerInterval('UpdateTimer', 0);
+        $this->SetValue('ActiveScene', $this->getSceneName($this->GetActiveScene()));
+        $this->WriteAttributeBoolean('UpdateActive', true);
+    }
+
+    private function getSceneName($sceneID)
+    {
+        if ($sceneID != 0) {
+            return IPS_GetName($this->GetIDForIdent("Scene$sceneID"));
+        } else {
+            return $this->Translate('Unknown');
+        }
     }
 
     private function SaveValues($sceneIdent)

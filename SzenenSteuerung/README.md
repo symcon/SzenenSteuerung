@@ -16,7 +16,8 @@ Nun kann die Szene mit dem entsprechenden "Ausführen"-Knopf jederzeit abgerufen
 
 ### 1. Funktionsumfang
 
-* Ermöglicht das Speichern und Ausführen von in einer Liste gespeicherten Variablen über Szenen.
+* Ermöglicht das Speichern und Aufrufen von in einer Liste gespeicherten Variablen über Szenen.
+* Die aktuell aktive Szene wird angezeigt
 * Darstellung und Bedienung via WebFront und mobilen Apps
 
 ### 2. Voraussetzungen
@@ -35,10 +36,10 @@ Nun kann die Szene mit dem entsprechenden "Ausführen"-Knopf jederzeit abgerufen
     - Weitere Informationen zum Hinzufügen von Instanzen in der [Dokumentation der Instanzen](https://www.symcon.de/service/dokumentation/konzepte/instanzen/#Instanz_hinzufügen)
 __Konfigurationsseite__:
 
-Name      | Beschreibung
---------- | ---------------------------------
-Szenen    | Anzahl der Szenen die zur Verfügung gestellt werden.
-Variablen | Liste mit den zu schaltenden Variablen
+Name                  | Beschreibung
+--------------------- | ---------------------------------
+Szenen                | Anzahl der Szenen die zur Verfügung gestellt werden.
+Variablen             | Liste mit den zu schaltenden Variablen
 
 ### 5. Statusvariablen und Profile
 
@@ -47,9 +48,11 @@ Die Statusvariablen werden automatisch angelegt. Das Löschen einzelner kann zu 
 ##### Statusvariablen
 Die Szenen werden 1,2..n aufsteigend durchnummeriert.
 
-Name      | Typ       | Beschreibung
---------- | --------- | ----------------
-Scene     | Integer   | Zur Anzeige im WebFront und den mobilen Apps. Ruft "Speichern" oder "Ausführen" auf.
+Name         | Typ       | Beschreibung
+------------ | --------- | ----------------
+Aktive Szene | String    | Zeigt den Namen der gerade Aktiven Szene an. Wenn die Werte der Variablen einer Szene zugeornet werden können wird diese ebenfalls angezeigt. Entsprechen die Werte der Variablen keiner Szene wird 'Unbekann' angezeigt
+Szene 1..n   | Integer   | Zur Anzeige im WebFront und den mobilen Apps. Ruft "Speichern" oder "Aufrufen" auf.
+
 
 ##### Profile:
 
@@ -76,3 +79,10 @@ Ruft die in dem Szenensteuerungsmodul mit der InstanzID $InstanzID gespeicherten
 Die Funktion liefert keinerlei Rückgabewert.  
 Beispiel:  
 `SZS_CallScene(12345, 1);`
+
+`integer SZS_GetActiveScene(integer $InstanzID);`
+Gibt die Nummer der Szene zurück, welche gerade aktiv ist. Wenn eine unbekannte Szene aktiv ist wird 0 zurückgegeben.
+Beispiel:
+`SZS_GetActiveScene(12345);`
+
+

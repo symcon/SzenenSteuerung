@@ -6,7 +6,11 @@
 			"Variables": "Variablen",
 			"No saved data for this Scene": "Keine gespeicherten Daten für diese Szene vorhanden",
 			"Save": "Speichern",
-			"Execute": "Ausführen"
+			"Call": "Aufrufen",
+			"Scene %d": "Szene %d",
+			"Active Scene": "Aktive Szene",
+			"Unknown": "Unbekannt",
+			"'%s' is called": "'%s' wird aufgerufen"
 		}
 	}
 }
