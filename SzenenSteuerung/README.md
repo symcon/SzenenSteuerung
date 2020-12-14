@@ -36,10 +36,10 @@ Nun kann die Szene mit dem entsprechenden "Ausführen"-Knopf jederzeit abgerufen
     - Weitere Informationen zum Hinzufügen von Instanzen in der [Dokumentation der Instanzen](https://www.symcon.de/service/dokumentation/konzepte/instanzen/#Instanz_hinzufügen)
 __Konfigurationsseite__:
 
-Name                  | Beschreibung
---------------------- | ---------------------------------
-Szenen                | Anzahl der Szenen die zur Verfügung gestellt werden.
-Variablen             | Liste mit den zu schaltenden Variablen
+Name      | Beschreibung
+--------- | ---------------------------------
+Szenen    | Anzahl der Szenen die zur Verfügung gestellt werden.
+Variablen | Liste mit den zu schaltenden Variablen.
 
 ### 5. Statusvariablen und Profile
 

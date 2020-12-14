@@ -13,7 +13,6 @@ class SzenenSteuerung extends IPSModule
         $this->RegisterPropertyString('Targets', '[]');
         //Attributes
         $this->RegisterAttributeString('SceneData', '[]');
-        $this->RegisterAttributeBoolean('UpdateActive', true);
         //Timer
         $this->RegisterTimer('UpdateTimer', 0, 'SZS_UpdateActive($_IPS[\'TARGET\']);');
 
@@ -144,7 +143,7 @@ class SzenenSteuerung extends IPSModule
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
-        if ($Message == VM_UPDATE && $this->ReadAttributeBoolean('UpdateActive')) {
+        if ($Message == VM_UPDATE && json_decode($this->GetBuffer('UpdateActive'))) {
             $this->SetValue('ActiveScene', $this->getSceneName($this->GetActiveScene()));
         }
     }
@@ -156,7 +155,7 @@ class SzenenSteuerung extends IPSModule
                 $this->SaveValues($Ident);
                 break;
             case '2':
-                $this->WriteAttributeBoolean('UpdateActive', false);
+                $this->SetBuffer('UpdateActive', json_encode(false));
                 $this->SetValue('ActiveScene', sprintf($this->Translate("'%s' is called"), IPS_GetName($this->GetIDForIdent($Ident))));
                 $this->SetTimerInterval('UpdateTimer', 5 * 1000);
                 $this->CallValues($Ident);
@@ -182,8 +181,8 @@ class SzenenSteuerung extends IPSModule
         $scenes = json_decode($this->ReadAttributeString('SceneData'), true);
         $targets = json_decode($this->ReadPropertyString('Targets'), true);
         $sceneCount = $this->ReadPropertyInteger('SceneCount');
+        $sceneID = -1;
         for ($i = 0; $i < $sceneCount; $i++) {
-            $sceneID = -1;
             foreach ($scenes[$i] as $id => $value) {
                 $sceneID = $i;
                 if (GetValue($id) != $value) {
@@ -195,6 +194,7 @@ class SzenenSteuerung extends IPSModule
                 break;
             }
         }
+        //The 'sceneID' starts at 1
         return $sceneID + 1;
     }
 
@@ -202,7 +202,7 @@ class SzenenSteuerung extends IPSModule
     {
         $this->SetTimerInterval('UpdateTimer', 0);
         $this->SetValue('ActiveScene', $this->getSceneName($this->GetActiveScene()));
-        $this->WriteAttributeBoolean('UpdateActive', true);
+        $this->SetBuffer('UpdateActive', json_encode(true));
     }
 
     private function getSceneName($sceneID)
