@@ -23,6 +23,10 @@ class SzenenSteuerungMigrationTest extends TestCase
     //Testing if the migration from wddx and data variables works correctly
     public function testMigration()
     {
+        //Skip this test if the function doesn't exist anymore
+        if (!function_exists('wddx_serialize_value')) {
+            $this->markTestSkipped('needs PHP 7.3 or lower');
+        }
         //Createing ActionScript
         $sid = IPS_CreateScript(0 /* PHP */);
         IPS_SetScriptContent($sid, 'SetValue($_IPS[\'VARIABLE\'], $_IPS[\'VALUE\']);');
