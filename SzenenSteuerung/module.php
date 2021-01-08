@@ -39,11 +39,11 @@ class SzenenSteuerung extends IPSModule
 
         //Transfer data from Target Category(legacy) to recent List
         if ($this->ReadPropertyString('Targets') == '[]') {
-            $targetID = @$this->GetIDForIdent('Targets');
+            $targetCategoryID = @$this->GetIDForIdent('Targets');
 
-            if ($targetID) {
+            if ($targetCategoryID) {
                 $variables = [];
-                foreach (IPS_GetChildrenIDs($targetID) as $childID) {
+                foreach (IPS_GetChildrenIDs($targetCategoryID) as $childID) {
                     $targetID = IPS_GetLink($childID)['TargetID'];
                     $line = [
                         'VariableID' => $targetID
@@ -52,7 +52,7 @@ class SzenenSteuerung extends IPSModule
                     IPS_DeleteLink($childID);
                 }
 
-                IPS_DeleteCategory($targetID);
+                IPS_DeleteCategory($targetCategoryID);
                 IPS_SetProperty($this->InstanceID, 'Targets', json_encode($variables));
                 IPS_ApplyChanges($this->InstanceID);
                 return;
