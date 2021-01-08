@@ -28,46 +28,48 @@ class SzenenSteuerungMigrationTest extends TestCase
             $this->markTestSkipped('needs PHP 7.3 or lower');
         }
         //Createing ActionScript
-        $sid = IPS_CreateScript(0 /* PHP */);
-        IPS_SetScriptContent($sid, 'SetValue($_IPS[\'VARIABLE\'], $_IPS[\'VALUE\']);');
+        $actionsScript = IPS_CreateScript(0 /* PHP */);
+        IPS_SetScriptContent($actionsScript, 'SetValue($_IPS[\'VARIABLE\'], $_IPS[\'VALUE\']);');
 
         //Creating variable to save
-        $vid = IPS_CreateVariable(1 /* Integer */);
-        IPS_SetVariableCustomAction($vid, $sid);
+        $targetVariableID = IPS_CreateVariable(1 /* Integer */);
+        IPS_SetVariableCustomAction($targetVariableID, $actionsScript);
 
         //Setting variable and putting it in serialised in SceneData
         $data = [
-            $vid => 7
+            $targetVariableID => 7
         ];
-        $iid = IPS_CreateInstance($this->szenenSteuerungID);
-        $vdid = IPS_CreateVariable(3 /* String */);
-        IPS_SetIdent($vdid, 'Scene1Data');
-        IPS_SetParent($vdid, $iid);
-        SetValue($vdid, wddx_serialize_value($data));
+        $instanceID = IPS_CreateInstance($this->szenenSteuerungID);
+        $sceneDataID = IPS_CreateVariable(3 /* String */);
+        IPS_SetIdent($sceneDataID, 'Scene1Data');
+        IPS_SetParent($sceneDataID, $instanceID);
+        SetValue($sceneDataID, wddx_serialize_value($data));
 
-        $this->assertEquals($vdid, IPS_GetObjectIDByIdent('Scene1Data', $iid));
+        $this->assertEquals($sceneDataID, IPS_GetObjectIDByIdent('Scene1Data', $instanceID));
 
-        IPS_SetConfiguration($iid, json_encode([
+        IPS_SetConfiguration($instanceID, json_encode([
             'SceneCount' => 1,
             'Targets'    => '[]'
         ]));
 
-        //Create category with linked variable to be transfered
-        $cid = IPS_CreateCategory();
-        IPS_SetIdent($cid, 'TargetsCategory');
-        IPS_SetParent($cid, $iid);
-        $lid = IPS_CreateLink();
-        IPS_SetLinkTargetID($lid, $vid);
+        //Create Targets category
+        $targetCategoryID = IPS_CreateCategory();
+        IPS_SetIdent($targetCategoryID, 'Targets');
+        IPS_SetParent($targetCategoryID, $instanceID);
+        //Create link to target variable
+        $linkID = IPS_CreateLink();
+        IPS_SetLinkTargetID($linkID, $targetVariableID);
+        IPS_SetParent($linkID, $targetCategoryID);
 
-        IPS_ApplyChanges($iid);
+        IPS_ApplyChanges($instanceID);
 
         //checks if all unnecessary links/categorys have been deleted
-        $this->assertEquals(1, IPS_GetProperty($iid, 'SceneCount'));
-        $this->assertEquals(false, IPS_VariableExists($vdid));
-        $this->assertEquals(false, IPS_LinkExists($lid));
+        $this->assertEquals(1, IPS_GetProperty($instanceID, 'SceneCount'));
+        $this->assertEquals(false, IPS_VariableExists($sceneDataID));
+        $this->assertEquals(false, IPS_LinkExists($linkID));
         //Test if data was transfered
-        $intf = IPS\InstanceManager::getInstanceInterface($iid);
+        $intf = IPS\InstanceManager::getInstanceInterface($instanceID);
         $intf->CallScene(1);
-        $this->assertEquals(7, GetValue($vid));
+        $this->assertEquals(7, GetValue($targetVariableID));
     }
 }
