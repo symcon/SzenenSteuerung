@@ -17,6 +17,14 @@
       "delete": true,
       "columns": [
         {
+          "caption": "ID",
+          "name": "ID",
+          "width": "100px",
+          "visible": true,
+          "add": 0,
+          "save": true
+        },
+        {
           "caption": "Variable",
           "name": "VariableID",
           "width": "auto",
@@ -25,7 +33,15 @@
             "type": "SelectVariable"
           }
         }
+
       ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Button",
+      "caption": "SceneData",
+      "onClick": "SZS_GetSceneData($id);"
     }
   ]
 }

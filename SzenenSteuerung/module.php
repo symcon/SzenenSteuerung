@@ -1,8 +1,10 @@
 <?php
 
 declare(strict_types=1);
+include_once __DIR__ . '/attributes.php';
 class SzenenSteuerung extends IPSModule
 {
+    use Attributes;
     public function Create()
     {
         //Never delete this line!
@@ -59,9 +61,11 @@ class SzenenSteuerung extends IPSModule
             }
         }
 
-        $sceneCount = $this->ReadPropertyInteger('SceneCount');
+        //Set IDs for all added variables
+        $this->setIDs();
 
         //Create Scene variables
+        $sceneCount = $this->ReadPropertyInteger('SceneCount');
         for ($i = 1; $i <= $sceneCount; $i++) {
             $variableID = $this->RegisterVariableInteger('Scene' . $i, sprintf($this->Translate('Scene %d'), $i), 'SZS.SceneControl');
             $this->EnableAction('Scene' . $i);
@@ -84,7 +88,7 @@ class SzenenSteuerung extends IPSModule
             }
         }
 
-        //Getting data from legacy Scene Data to put them in SceneData attribute (including wddx, JSON)
+        //Getting data from legacy SceneData to put them in SceneData attribute (including wddx, JSON)
         for ($i = 1; $i <= $sceneCount; $i++) {
             $sceneDataID = @$this->GetIDForIdent('Scene' . $i . 'Data');
             if ($sceneDataID) {
@@ -116,6 +120,40 @@ class SzenenSteuerung extends IPSModule
                 break;
             }
         }
+
+        //Transfer variableIDs to IDs
+        $targets = json_decode($this->ReadPropertyString('Targets'), true);
+        $variableIDs = [];
+        foreach ($targets as $target) {
+            $variableIDs[$target['VariableID']] = $target['ID'];
+        }
+        $scenes = json_decode($this->ReadAttributeString('SceneData'), true);
+        foreach ($scenes as $index => $scene) {
+            foreach ($scene as $id => $value) {
+                if (array_key_exists($id, $variableIDs) && ($variableIDs[$id] != $id)) {
+                    unset($scenes[$index][$id]);
+                    $scenes[$index][$variableIDs[$id]] = $value;
+                }
+            }
+        }
+        $this->WriteAttributeString('SceneData', json_encode($scenes));
+
+        //Remove unused ids form SceneData
+        $ids = [];
+        $targets = json_decode($this->ReadPropertyString('Targets'), true);
+        foreach ($targets as $target) {
+            $ids[] = $target['ID'];
+        }
+        $scenes = json_decode($this->ReadAttributeString('SceneData'), true);
+        foreach ($scenes as $index => $scene) {
+            foreach ($scene as $id => $value) {
+                if (!in_array($id, $ids)) {
+                    unset($scenes[$index][$id]);
+                }
+            }
+        }
+
+        $this->WriteAttributeString('SceneData', json_encode($scenes));
 
         //Add references
         foreach ($this->GetReferenceList() as $referenceID) {
@@ -183,11 +221,14 @@ class SzenenSteuerung extends IPSModule
         $sceneCount = $this->ReadPropertyInteger('SceneCount');
         $sceneID = -1;
         for ($i = 0; $i < $sceneCount; $i++) {
-            foreach ($scenes[$i] as $id => $value) {
+            foreach ($scenes[$i] as $guid => $value) {
+                $id = $this->getVariable($guid);
                 $sceneID = $i;
-                if (GetValue($id) != $value) {
-                    $sceneID = -1;
-                    break;
+                if (IPS_VariableExists($id)) {
+                    if (GetValue($id) != $value) {
+                        $sceneID = -1;
+                        break;
+                    }
                 }
             }
             if ($sceneID != -1) {
@@ -203,6 +244,66 @@ class SzenenSteuerung extends IPSModule
         $this->SetTimerInterval('UpdateTimer', 0);
         $this->SetValue('ActiveScene', $this->getSceneName($this->GetActiveScene()));
         $this->SetBuffer('UpdateActive', json_encode(true));
+    }
+
+    public function GetSceneData()
+    {
+        var_dump(json_decode($this->ReadAttributeString('SceneData'), true));
+    }
+
+    public function setIDs()
+    {
+        $ids = [];
+
+        //Check that all IDs have distinct values and build an id array
+        $targets = json_decode($this->ReadPropertyString('Targets'), true);
+        foreach ($targets as $target) {
+            //Skip over uninitialized zero values
+            if ($target['ID'] != 0) {
+                if (in_array($target['ID'], $ids)) {
+                    throw new Exception('ID has to be unique for all characteristics');
+                }
+                $ids[] = $target['ID'];
+            }
+        }
+
+        //Sort array and determine highest value
+        rsort($ids);
+
+        //We have at least AccessoryID 1 used for the Bridge accessory
+        $highestID = 0;
+
+        //Highest value is first
+        if ((count($ids) > 0) && ($ids[0] > 0)) {
+            $highestID = $ids[0];
+        }
+
+        //Update all properties
+        $wasUpdated = false;
+        $targets = json_decode($this->ReadPropertyString('Targets'), true);
+        foreach ($targets as $index => &$target) {
+            //ids which are currently zero need an id
+            if ($target['ID'] === 0) {
+                $target['ID'] = ++$highestID;
+                $wasUpdated = true;
+            }
+        }
+        if ($wasUpdated) {
+            IPS_SetProperty($this->InstanceID, 'Targets', json_encode($targets));
+            //Use IPS_ApplyChanges to prevent endless loop
+            IPS_ApplyChanges($this->InstanceID);
+        }
+    }
+
+    private function getVariable($guid)
+    {
+        $targets = json_decode($this->ReadPropertyString('Targets'), true);
+        foreach ($targets as $target) {
+            if ($target['ID'] == $guid) {
+                return $target['VariableID'];
+            }
+        }
+        return 0;
     }
 
     private function getSceneName($sceneID)
@@ -225,7 +326,7 @@ class SzenenSteuerung extends IPSModule
             if (!IPS_VariableExists($VarID)) {
                 continue;
             }
-            $data[$VarID] = GetValue($VarID);
+            $data[$target['ID']] = GetValue($VarID);
         }
 
         $sceneData = json_decode($this->ReadAttributeString('SceneData'));
@@ -239,6 +340,7 @@ class SzenenSteuerung extends IPSModule
 
     private function CallValues($sceneIdent)
     {
+
         $sceneData = json_decode($this->ReadAttributeString('SceneData'), true);
 
         $i = (int) filter_var($sceneIdent, FILTER_SANITIZE_NUMBER_INT);
@@ -246,7 +348,8 @@ class SzenenSteuerung extends IPSModule
         $data = $sceneData[$i - 1];
 
         if (count($data) > 0) {
-            foreach ($data as $id => $value) {
+            foreach ($data as $guid => $value) {
+                $id = $this->getVariable($guid);
                 if (IPS_VariableExists($id)) {
                     $v = IPS_GetVariable($id);
                     if (GetValue($id) == $value) {

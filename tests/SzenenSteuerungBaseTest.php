@@ -9,7 +9,7 @@ include_once __DIR__ . '/stubs/MessageStubs.php';
 
 use PHPUnit\Framework\TestCase;
 
-class SzenenSteuerungTest extends TestCase
+class SzenenSteuerungBaseTest extends TestCase
 {
     private $szenenSteuerungID = '{87F46796-CC43-442D-94FD-AAA0BD8D9F54}';
 
@@ -36,7 +36,8 @@ class SzenenSteuerungTest extends TestCase
             'SceneCount' => 1,
             'Targets'    => json_encode([
                 [
-                    'VariableID' => $vid
+                    'VariableID' => $vid,
+                    'ID' => 1
                 ]
             ])
         ]));
@@ -44,7 +45,7 @@ class SzenenSteuerungTest extends TestCase
 
         //Checking if all settings have been adopted
         $this->assertEquals(1, IPS_GetProperty($iid, 'SceneCount'));
-        $this->assertEquals(json_encode([['VariableID' => $vid]]), IPS_GetProperty($iid, 'Targets'));
+        $this->assertEquals(json_encode([['VariableID' => $vid, 'ID' => 1]]), IPS_GetProperty($iid, 'Targets'));
 
         $intf = IPS\InstanceManager::getInstanceInterface($iid);
 
@@ -70,7 +71,8 @@ class SzenenSteuerungTest extends TestCase
             'SceneCount' => 15,
             'Targets'    => json_encode([
                 [
-                    'VariableID' => $vid
+                    'VariableID' => $vid,
+                    'ID' => 2
                 ]
             ])
         ]));
