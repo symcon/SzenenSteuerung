@@ -40,15 +40,15 @@ class SzenenSteuerungIdMigrationTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID' => $targetVariableOne,
-                    'ID' => 0
+                    'ID'         => 0
                 ],
                 [
                     'VariableID' => $targetVariableTwo,
-                    'ID' => 0
+                    'ID'         => 0
                 ]
             ])
         ]));
-        
+
         $sceneData = [
             [
                 $targetVariableOne => true,
@@ -70,8 +70,8 @@ class SzenenSteuerungIdMigrationTest extends TestCase
         ];
         $this->assertEquals(json_encode($expectedTargets), IPS_GetConfiguration($instanceID)['Targets']);
         $expectedSceneData = [
-            [ 1 => true, 2 => true],
-            [ 1 => false, 2 => false]
+            [1 => true, 2 => true],
+            [1 => false, 2 => false]
         ];
         $this->assertEquals(json_encode($expectedSceneData), $intf->GetAttribute('SceneData'));
     }

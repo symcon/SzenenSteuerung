@@ -37,7 +37,7 @@ class SzenenSteuerungBaseTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID' => $vid,
-                    'ID' => 1
+                    'ID'         => 1
                 ]
             ])
         ]));
@@ -72,7 +72,7 @@ class SzenenSteuerungBaseTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID' => $vid,
-                    'ID' => 2
+                    'ID'         => 2
                 ]
             ])
         ]));

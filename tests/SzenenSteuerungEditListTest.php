@@ -39,7 +39,7 @@ class SzenenSteuerungEditListTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID' => $variableA,
-                    'ID' => 1
+                    'ID'         => 1
                 ]
             ])
         ]));
@@ -64,7 +64,7 @@ class SzenenSteuerungEditListTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID' => $variableB,
-                    'ID' => 1
+                    'ID'         => 1
                 ]
             ])
         ]));
@@ -94,11 +94,11 @@ class SzenenSteuerungEditListTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID' => $variableA,
-                    'ID' => 1
+                    'ID'         => 1
                 ],
                 [
                     'VariableID' => $variableB,
-                    'ID' => 2
+                    'ID'         => 2
                 ]
             ])
         ]));
@@ -126,7 +126,7 @@ class SzenenSteuerungEditListTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID' => $variableB,
-                    'ID' => 2
+                    'ID'         => 2
                 ]
             ])
         ]));
