@@ -340,7 +340,6 @@ class SzenenSteuerung extends IPSModule
 
     private function CallValues($sceneIdent)
     {
-
         $sceneData = json_decode($this->ReadAttributeString('SceneData'), true);
 
         $i = (int) filter_var($sceneIdent, FILTER_SANITIZE_NUMBER_INT);
