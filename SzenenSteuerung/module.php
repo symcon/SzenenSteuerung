@@ -48,7 +48,8 @@ class SzenenSteuerung extends IPSModule
                 foreach (IPS_GetChildrenIDs($targetCategoryID) as $childID) {
                     $targetID = IPS_GetLink($childID)['TargetID'];
                     $line = [
-                        'VariableID' => $targetID
+                        'VariableID' => $targetID,
+                        'ID' => 0
                     ];
                     array_push($variables, $line);
                     IPS_DeleteLink($childID);

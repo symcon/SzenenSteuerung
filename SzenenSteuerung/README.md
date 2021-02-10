@@ -19,6 +19,7 @@ Nun kann die Szene mit dem entsprechenden "Ausführen"-Knopf jederzeit abgerufen
 * Ermöglicht das Speichern und Aufrufen von in einer Liste gespeicherten Variablen über Szenen.
 * Die aktuell aktive Szene wird angezeigt
 * Darstellung und Bedienung via WebFront und mobilen Apps
+* Wenn eine Variable ausgetauscht wird, bleiben bereits erstellte Szenen erhalten und schalten das neue Gerät
 
 ### 2. Voraussetzungen
 
