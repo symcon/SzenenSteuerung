@@ -36,8 +36,8 @@ class SzenenSteuerungBaseTest extends TestCase
             'SceneCount' => 1,
             'Targets'    => json_encode([
                 [
-                    'VariableID' => $vid,
-                    'ID'         => 1
+                    'VariableID'   => $vid,
+                    'GUID'         => 1
                 ]
             ])
         ]));
@@ -45,7 +45,7 @@ class SzenenSteuerungBaseTest extends TestCase
 
         //Checking if all settings have been adopted
         $this->assertEquals(1, IPS_GetProperty($iid, 'SceneCount'));
-        $this->assertEquals(json_encode([['VariableID' => $vid, 'ID' => 1]]), IPS_GetProperty($iid, 'Targets'));
+        $this->assertEquals(json_encode([['VariableID' => $vid, 'GUID' => 1]]), IPS_GetProperty($iid, 'Targets'));
 
         $intf = IPS\InstanceManager::getInstanceInterface($iid);
 
@@ -71,8 +71,8 @@ class SzenenSteuerungBaseTest extends TestCase
             'SceneCount' => 15,
             'Targets'    => json_encode([
                 [
-                    'VariableID' => $vid,
-                    'ID'         => 2
+                    'VariableID'   => $vid,
+                    'GUID'         => 2
                 ]
             ])
         ]));

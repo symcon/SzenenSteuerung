@@ -38,8 +38,8 @@ class SzenenSteuerungEditListTest extends TestCase
             'SceneCount' => 1,
             'Targets'    => json_encode([
                 [
-                    'VariableID' => $variableA,
-                    'ID'         => 1
+                    'VariableID'   => $variableA,
+                    'GUID'         => 1
                 ]
             ])
         ]));
@@ -47,7 +47,7 @@ class SzenenSteuerungEditListTest extends TestCase
 
         //Checking if all settings have been adopted
         $this->assertEquals(1, IPS_GetProperty($iid, 'SceneCount'));
-        $this->assertEquals(json_encode([['VariableID' => $variableA, 'ID' => 1]]), IPS_GetProperty($iid, 'Targets'));
+        $this->assertEquals(json_encode([['VariableID' => $variableA, 'GUID' => 1]]), IPS_GetProperty($iid, 'Targets'));
 
         $intf = IPS\InstanceManager::getInstanceInterface($iid);
 
@@ -63,8 +63,8 @@ class SzenenSteuerungEditListTest extends TestCase
             'SceneCount' => 1,
             'Targets'    => json_encode([
                 [
-                    'VariableID' => $variableB,
-                    'ID'         => 1
+                    'VariableID'   => $variableB,
+                    'GUID'         => 1
                 ]
             ])
         ]));
@@ -93,12 +93,12 @@ class SzenenSteuerungEditListTest extends TestCase
             'SceneCount' => 15,
             'Targets'    => json_encode([
                 [
-                    'VariableID' => $variableA,
-                    'ID'         => 1
+                    'VariableID'   => $variableA,
+                    'GUID'         => 1
                 ],
                 [
-                    'VariableID' => $variableB,
-                    'ID'         => 2
+                    'VariableID'   => $variableB,
+                    'GUID'         => 2
                 ]
             ])
         ]));
@@ -125,8 +125,8 @@ class SzenenSteuerungEditListTest extends TestCase
             'SceneCount' => 15,
             'Targets'    => json_encode([
                 [
-                    'VariableID' => $variableB,
-                    'ID'         => 2
+                    'VariableID'   => $variableB,
+                    'GUID'         => 2
                 ]
             ])
         ]));

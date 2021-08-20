@@ -15,4 +15,8 @@ if (defined('PHPUNIT_TESTSUITE')) {
             return $this->ReadAttributeString($name);
         }
     }
+} else {
+    trait Attributes
+    {
+    }
 }

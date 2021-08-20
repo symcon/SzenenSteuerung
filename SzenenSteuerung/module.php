@@ -39,31 +39,36 @@ class SzenenSteuerung extends IPSModule
         //Never delete this line!
         parent::ApplyChanges();
 
+        $targets = json_decode($this->ReadPropertyString('Targets'), true);
+
         //Transfer data from Target Category(legacy) to recent List
-        if ($this->ReadPropertyString('Targets') == '[]') {
+        if ($targets == []) {
             $targetCategoryID = @$this->GetIDForIdent('Targets');
 
             if ($targetCategoryID) {
-                $variables = [];
                 foreach (IPS_GetChildrenIDs($targetCategoryID) as $childID) {
                     $targetID = IPS_GetLink($childID)['TargetID'];
                     $line = [
-                        'VariableID' => $targetID,
-                        'ID'         => 0
+                        'VariableID' => $targetID
                     ];
-                    array_push($variables, $line);
+                    array_push($targets, $line);
                     IPS_DeleteLink($childID);
                 }
 
                 IPS_DeleteCategory($targetCategoryID);
-                IPS_SetProperty($this->InstanceID, 'Targets', json_encode($variables));
-                IPS_ApplyChanges($this->InstanceID);
-                return;
+                $needsReload = true;
             }
         }
 
-        //Set IDs for all added variables
-        $this->setIDs();
+        //Add GUID if none set
+        $needsReload = false;
+        foreach ($targets as &$target) {
+            if (!isset($target['GUID'])) {
+                $target['GUID'] = $this->generateGUID();
+                $needsReload = true;
+            }
+        }
+        unset($target);
 
         //Create Scene variables
         $sceneCount = $this->ReadPropertyInteger('SceneCount');
@@ -123,46 +128,35 @@ class SzenenSteuerung extends IPSModule
         }
 
         //Transfer variableIDs to IDs
-        $targets = json_decode($this->ReadPropertyString('Targets'), true);
-        $variableIDs = [];
+        $variableGUIDs = [];
         foreach ($targets as $target) {
-            $variableIDs[$target['VariableID']] = $target['ID'];
+            $variableGUIDs[$target['VariableID']] = $target['GUID'];
         }
         $scenes = json_decode($this->ReadAttributeString('SceneData'), true);
-        foreach ($scenes as $index => $scene) {
-            foreach ($scene as $id => $value) {
-                if (array_key_exists($id, $variableIDs) && ($variableIDs[$id] != $id)) {
-                    unset($scenes[$index][$id]);
-                    $scenes[$index][$variableIDs[$id]] = $value;
+        foreach ($scenes as &$scene) {
+            foreach ($scene as $variableID => $value) {
+                if (array_key_exists($variableID, $variableGUIDs)) {
+                    unset($scene[$variableID]);
+                    $scene[$variableGUIDs[$variableID]] = $value;
                 }
             }
         }
+        unset($scene);
         $this->WriteAttributeString('SceneData', json_encode($scenes));
 
-        //Remove unused ids form SceneData
-        $ids = [];
-        $targets = json_decode($this->ReadPropertyString('Targets'), true);
-        foreach ($targets as $target) {
-            $ids[] = $target['ID'];
+        //Reload if there were any changes
+        if ($needsReload) {
+            IPS_SetProperty($this->InstanceID, 'Targets', json_encode($targets));
+            IPS_ApplyChanges($this->InstanceID);
+            return;
         }
-        $scenes = json_decode($this->ReadAttributeString('SceneData'), true);
-        foreach ($scenes as $index => $scene) {
-            foreach ($scene as $id => $value) {
-                if (!in_array($id, $ids)) {
-                    unset($scenes[$index][$id]);
-                }
-            }
-        }
-
-        $this->WriteAttributeString('SceneData', json_encode($scenes));
 
         //Add references
         foreach ($this->GetReferenceList() as $referenceID) {
             $this->UnregisterReference($referenceID);
         }
-        $targets = json_decode($this->ReadPropertyString('Targets'));
         foreach ($targets as $target) {
-            $this->RegisterReference($target->VariableID);
+            $this->RegisterReference($target['VariableID']);
         }
 
         //Unregister all messages
@@ -173,7 +167,7 @@ class SzenenSteuerung extends IPSModule
 
         //Register messages if neccessary
         foreach ($targets as $target) {
-            $this->RegisterMessage($target->VariableID, VM_UPDATE);
+            $this->RegisterMessage($target['VariableID'], VM_UPDATE);
         }
 
         //Set active scene
@@ -223,10 +217,10 @@ class SzenenSteuerung extends IPSModule
         $sceneID = -1;
         for ($i = 0; $i < $sceneCount; $i++) {
             foreach ($scenes[$i] as $guid => $value) {
-                $id = $this->getVariable($guid);
+                $variableID = $this->getVariable($guid);
                 $sceneID = $i;
-                if (IPS_VariableExists($id)) {
-                    if (GetValue($id) != $value) {
+                if (IPS_VariableExists($variableID)) {
+                    if (GetValue($variableID) != $value) {
                         $sceneID = -1;
                         break;
                     }
@@ -247,60 +241,30 @@ class SzenenSteuerung extends IPSModule
         $this->SetBuffer('UpdateActive', json_encode(true));
     }
 
-    public function GetSceneData()
+    public function AddVariable($Targets)
     {
-        var_dump(json_decode($this->ReadAttributeString('SceneData'), true));
+        $this->SendDebug('New Value', json_encode($Targets), 0);
+        $form = json_decode($this->GetConfigurationForm(), true);
+        $this->UpdateFormField('Targets', 'columns', json_encode($form['elements'][1]['columns']));
     }
 
-    public function setIDs()
+    public function GetConfigurationForm()
     {
-        $ids = [];
+        $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+        $form['elements'][1]['columns'][0]['add'] = $this->generateGUID();
+        return json_encode($form);
+    }
 
-        //Check that all IDs have distinct values and build an id array
-        $targets = json_decode($this->ReadPropertyString('Targets'), true);
-        foreach ($targets as $target) {
-            //Skip over uninitialized zero values
-            if ($target['ID'] != 0) {
-                if (in_array($target['ID'], $ids)) {
-                    throw new Exception('ID has to be unique for all characteristics');
-                }
-                $ids[] = $target['ID'];
-            }
-        }
-
-        //Sort array and determine highest value
-        rsort($ids);
-
-        //We have at least AccessoryID 1 used for the Bridge accessory
-        $highestID = 0;
-
-        //Highest value is first
-        if ((count($ids) > 0) && ($ids[0] > 0)) {
-            $highestID = $ids[0];
-        }
-
-        //Update all properties
-        $wasUpdated = false;
-        $targets = json_decode($this->ReadPropertyString('Targets'), true);
-        foreach ($targets as $index => &$target) {
-            //ids which are currently zero need an id
-            if ($target['ID'] === 0) {
-                $target['ID'] = ++$highestID;
-                $wasUpdated = true;
-            }
-        }
-        if ($wasUpdated) {
-            IPS_SetProperty($this->InstanceID, 'Targets', json_encode($targets));
-            //Use IPS_ApplyChanges to prevent endless loop
-            IPS_ApplyChanges($this->InstanceID);
-        }
+    private function generateGUID()
+    {
+        return sprintf('{%04X%04X-%04X-%04X-%04X-%04X%04X%04X}', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
     }
 
     private function getVariable($guid)
     {
         $targets = json_decode($this->ReadPropertyString('Targets'), true);
         foreach ($targets as $target) {
-            if ($target['ID'] == $guid) {
+            if ($target['GUID'] == $guid) {
                 return $target['VariableID'];
             }
         }
@@ -327,7 +291,7 @@ class SzenenSteuerung extends IPSModule
             if (!IPS_VariableExists($VarID)) {
                 continue;
             }
-            $data[$target['ID']] = GetValue($VarID);
+            $data[$target['GUID']] = GetValue($VarID);
         }
 
         $sceneData = json_decode($this->ReadAttributeString('SceneData'));

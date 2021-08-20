@@ -1,10 +1,6 @@
 {
   "elements": [
     {
-      "type": "Label",
-      "label": "Number of Scenes"
-    },
-    {
       "type": "NumberSpinner",
       "name": "SceneCount",
       "caption": "Scenes"
@@ -14,14 +10,15 @@
       "name": "Targets",
       "caption": "Variables",
       "add": true,
+      "onAdd": "SZS_AddVariable($id, $Targets);",
       "delete": true,
       "columns": [
         {
-          "caption": "ID",
-          "name": "ID",
+          "caption": "GUID",
+          "name": "GUID",
           "width": "100px",
-          "visible": true,
-          "add": 0,
+          "visible": false,
+          "add": "",
           "save": true
         },
         {
@@ -35,13 +32,6 @@
         }
 
       ]
-    }
-  ],
-  "actions": [
-    {
-      "type": "Button",
-      "caption": "SceneData",
-      "onClick": "SZS_GetSceneData($id);"
     }
   ]
 }
