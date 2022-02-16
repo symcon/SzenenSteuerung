@@ -3,7 +3,8 @@
     {
       "type": "NumberSpinner",
       "name": "SceneCount",
-      "caption": "Scenes"
+      "caption": "Scene Count",
+      "suffix": "Scenes"
     },
     {
       "type": "List",
