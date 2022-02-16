@@ -186,6 +186,7 @@ class SzenenSteuerung extends IPSModule
         switch ($Value) {
             case '1':
                 $this->SaveValues($Ident);
+                $this->SetValue('ActiveScene', $this->getSceneName($this->GetActiveScene()));
                 break;
             case '2':
                 $this->SetBuffer('UpdateActive', json_encode(false));
