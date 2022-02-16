@@ -62,13 +62,12 @@ class SzenenSteuerung extends IPSModule
 
         //Add GUID if none set
         $needsReload = false;
-        foreach ($targets as &$target) {
-            if (!isset($target['GUID'])) {
-                $target['GUID'] = $this->generateGUID();
+        foreach ($targets as $index => $target) {
+            if (!isset($targets[$index]['GUID'])) {
+                $targets[$index]['GUID'] = $this->generateGUID();
                 $needsReload = true;
             }
         }
-        unset($target);
 
         //Create Scene variables
         $sceneCount = $this->ReadPropertyInteger('SceneCount');
@@ -133,15 +132,14 @@ class SzenenSteuerung extends IPSModule
             $variableGUIDs[$target['VariableID']] = $target['GUID'];
         }
         $scenes = json_decode($this->ReadAttributeString('SceneData'), true);
-        foreach ($scenes as &$scene) {
+        foreach ($scenes as $index => $scene) {
             foreach ($scene as $variableID => $value) {
                 if (array_key_exists($variableID, $variableGUIDs)) {
-                    unset($scene[$variableID]);
-                    $scene[$variableGUIDs[$variableID]] = $value;
+                    unset($scenes[$index][$variableID]);
+                    $scenes[$index][$variableGUIDs[$variableID]] = $value;
                 }
             }
         }
-        unset($scene);
         $this->WriteAttributeString('SceneData', json_encode($scenes));
 
         //Reload if there were any changes
