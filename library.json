@@ -1,12 +1,12 @@
 {
-	"id": "{4414D465-0A32-49AC-929A-D948CBCDE06E}",
-	"author": "Symcon GmbH",
-	"name": "SzenenSteuerung",
-	"url": "https://www.symcon.de",
-	"compatibility": {
-		"version": "5.0"
-	},
-	"version": "1.3",
-	"build": 0,
-	"date": 0
+    "id": "{4414D465-0A32-49AC-929A-D948CBCDE06E}",
+    "author": "Symcon GmbH",
+    "name": "SceneControl",
+    "url": "https://www.symcon.de",
+    "compatibility": {
+        "version": "5.0"
+    },
+    "version": "1.4",
+    "build": 0,
+    "date": 0
 }

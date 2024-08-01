@@ -8,8 +8,8 @@ class SzenenSteuerungValidationTest extends TestCaseSymconValidation
     {
         $this->validateLibrary(__DIR__ . '/..');
     }
-    public function testValidateSzenenSteuerungModule(): void
+    public function testValidateSceneControlModule(): void
     {
-        $this->validateModule(__DIR__ . '/../SzenenSteuerung');
+        $this->validateModule(__DIR__ . '/../SceneControl');
     }
 }

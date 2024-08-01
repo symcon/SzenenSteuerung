@@ -1,16 +1,18 @@
 {
-	"translations": {
-		"de": { 
-			"Scene Count": "Szenenanzahl",
-			"Scenes": "Szenen",
-			"Variables": "Variablen",
-			"No saved data for this Scene": "Keine gespeicherten Daten für diese Szene vorhanden",
-			"Save": "Speichern",
-			"Call": "Aufrufen",
-			"Scene %d": "Szene %d",
-			"Active Scene": "Aktive Szene",
-			"Unknown": "Unbekannt",
-			"'%s' is called": "'%s' wird aufgerufen"
-		}
-	}
+    "translations": {
+        "de": {
+            "Scene Count": "Szenenanzahl",
+            "Scenes": "Szenen",
+            "Variables": "Variablen",
+            "No saved data for this Scene": "Keine gespeicherten Daten für diese Szene vorhanden",
+            "Save": "Speichern",
+            "Call": "Aufrufen",
+            "Scene %d": "Szene %d",
+            "Active Scene": "Aktive Szene",
+            "Unknown": "Unbekannt",
+            "'%s' is called": "'%s' wird aufgerufen",
+            "Scene Control": "Szenensteuerung",
+            "https://www.symcon.de/en/service/documentation/module-reference/scene-control/": "https://www.symcon.de/de/service/dokumentation/modulreferenz/szenensteuerung/"
+        }
+    }
 }

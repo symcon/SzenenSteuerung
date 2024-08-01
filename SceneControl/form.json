@@ -1,38 +1,38 @@
 {
-  "elements": [
-    {
-      "type": "NumberSpinner",
-      "name": "SceneCount",
-      "caption": "Scene Count",
-      "suffix": "Scenes"
-    },
-    {
-      "type": "List",
-      "name": "Targets",
-      "caption": "Variables",
-      "add": true,
-      "onAdd": "SZS_AddVariable($id, $Targets);",
-      "delete": true,
-      "columns": [
+    "elements": [
         {
-          "caption": "GUID",
-          "name": "GUID",
-          "width": "100px",
-          "visible": false,
-          "add": "",
-          "save": true
+            "type": "NumberSpinner",
+            "name": "SceneCount",
+            "caption": "Scene Count",
+            "suffix": "Scenes"
         },
         {
-          "caption": "Variable",
-          "name": "VariableID",
-          "width": "auto",
-          "add": 0,
-          "edit": {
-            "type": "SelectVariable"
-          }
+            "type": "List",
+            "name": "Targets",
+            "caption": "Variables",
+            "add": true,
+            "onAdd": "SZS_AddVariable($id, $Targets);",
+            "delete": true,
+            "changeOrder": true,
+            "columns": [
+                {
+                    "caption": "GUID",
+                    "name": "GUID",
+                    "width": "100px",
+                    "visible": false,
+                    "add": "",
+                    "save": true
+                },
+                {
+                    "caption": "Variable",
+                    "name": "VariableID",
+                    "width": "auto",
+                    "add": 0,
+                    "edit": {
+                        "type": "SelectVariable"
+                    }
+                }
+            ]
         }
-
-      ]
-    }
-  ]
+    ]
 }
