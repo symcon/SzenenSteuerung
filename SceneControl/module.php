@@ -41,25 +41,6 @@ class SceneControl extends IPSModule
 
         $targets = json_decode($this->ReadPropertyString('Targets'), true);
 
-        //Transfer data from Target Category(legacy) to recent List
-        if ($targets == []) {
-            $targetCategoryID = @$this->GetIDForIdent('Targets');
-
-            if ($targetCategoryID) {
-                foreach (IPS_GetChildrenIDs($targetCategoryID) as $childID) {
-                    $targetID = IPS_GetLink($childID)['TargetID'];
-                    $line = [
-                        'VariableID' => $targetID
-                    ];
-                    array_push($targets, $line);
-                    IPS_DeleteLink($childID);
-                }
-
-                IPS_DeleteCategory($targetCategoryID);
-                $needsReload = true;
-            }
-        }
-
         //Add GUID if none set
         $needsReload = false;
         foreach ($targets as $index => $target) {
@@ -90,26 +71,6 @@ class SceneControl extends IPSModule
         for ($i = 1; $i <= $sceneCount; $i++) {
             if (!array_key_exists($i - 1, $sceneData)) {
                 $sceneData[$i - 1] = new stdClass();
-            }
-        }
-
-        //Getting data from legacy SceneData to put them in SceneData attribute (including wddx, JSON)
-        for ($i = 1; $i <= $sceneCount; $i++) {
-            $sceneDataID = @$this->GetIDForIdent('Scene' . $i . 'Data');
-            if ($sceneDataID) {
-                $decodedSceneData = null;
-                if (function_exists('wddx_deserialize')) {
-                    $decodedSceneData = wddx_deserialize(GetValue($sceneDataID));
-                }
-
-                if ($decodedSceneData == null) {
-                    $decodedSceneData = json_decode(GetValue($sceneDataID));
-                }
-
-                if ($decodedSceneData) {
-                    $sceneData[$i - 1] = $decodedSceneData;
-                }
-                $this->UnregisterVariable('Scene' . $i . 'Data');
             }
         }
 
@@ -251,7 +212,80 @@ class SceneControl extends IPSModule
     {
         $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
         $form['elements'][1]['columns'][0]['add'] = $this->generateGUID();
+
+        // //generate the Lists for the action section
+        $targets = json_decode($this->ReadPropertyString('Targets'), true);
+        if (count($targets) === 0) {
+            return json_encode($form);
+        }
+
+        $actions = [['type' => 'Label', 'caption' => $this->translate('Set Scenes')]];
+        $sceneCount = $this->ReadPropertyInteger('SceneCount');
+        $sceneData = json_decode($this->ReadAttributeString('SceneData'), true);
+        for ($i = 1; $i <= $sceneCount; $i++) {
+            $selectTargets = [];
+            $dataNames = [];
+            $sceneGuids = [];
+
+            foreach ($targets as $key => $value) {
+                $this->SendDebug($key, print_r($value, true), 0);
+                $variableID = $value['VariableID'];
+                if (!IPS_VariableExists($variableID)) {
+                    continue; // Maybe alternativ field
+                }
+                $targetValue = json_encode(array_key_exists($i - 1, $sceneData) && array_key_exists($value['GUID'], $sceneData[$i - 1]) ? $sceneData[$i - 1][$value['GUID']] : GetValue($variableID));
+                $selectTargets[] = [
+                    'type'       => 'SelectValue',
+                    'name'       => 'Scene' . $i . 'ID' . $variableID,
+                    'caption'    => IPS_GetName($variableID),
+                    'value'      => $targetValue,
+                    'variableID' => $variableID
+                ];
+                $dataNames[] = '$Scene' . $i . 'ID' . $variableID;
+                $sceneGuids[] = $value['GUID'];
+            }
+            $selectTargets[] = [
+                'type'       => 'Button',
+                'caption'    => $this->Translate('Save'),
+                'onClick'    => 'SZS_SaveSceneEx($id, ' . $i . ', ' . json_encode($dataNames, JSON_UNESCAPED_SLASHES) . ', ' . json_encode($sceneGuids) . ');'
+            ];
+            $actions[$i] = [
+                'type'    => 'ExpansionPanel',
+                'name'    => 'Scene' . $i,
+                'caption' => $this->getSceneName($i),
+                'items'   => $selectTargets
+            ];
+        }
+
+        $form['actions'] = $actions;
+        $this->SendDebug('actions', json_encode($actions), 0);
         return json_encode($form);
+    }
+
+    public function SaveSceneEx(int $sceneNumber, array $sceneValues, array $sceneGuids): bool
+    {
+        $unsavedData = array_combine($sceneGuids, $sceneValues);
+        //fix datatype
+        foreach ($unsavedData as $guid => $value) {
+            $id = $this->getVariable($guid);
+            if (!IPS_VariableExists($id)) {
+                continue;
+            }
+            $type = IPS_GetVariable($id)['VariableType'];
+            $value = match ($type) {
+                0 => $value == 'true',
+                1 => intval($value),
+                2 => floatval($value),
+                3 => trim($value, '"'),
+            };
+            $unsavedData[$guid] = $value;
+        }
+        $sceneData = json_decode($this->ReadAttributeString('SceneData'), true);
+
+        // set the value in the correct scene
+        $sceneData[$sceneNumber - 1] = $unsavedData;
+        $this->WriteAttributeString('SceneData', json_encode($sceneData));
+        return true;
     }
 
     private function generateGUID()

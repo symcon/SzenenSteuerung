@@ -29,7 +29,8 @@
                     "width": "auto",
                     "add": 0,
                     "edit": {
-                        "type": "SelectVariable"
+                        "type": "SelectVariable",
+                        "requiredAction": 1
                     }
                 }
             ]
