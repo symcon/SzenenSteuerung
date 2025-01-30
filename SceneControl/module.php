@@ -237,7 +237,7 @@ class SceneControl extends IPSModule
                 $selectTargets[] = [
                     'type'       => 'SelectValue',
                     'name'       => 'Scene' . $i . 'ID' . $variableID,
-                    'caption'    => IPS_GetName($variableID),
+                    'caption'    => IPS_GetLocation($variableID),
                     'value'      => $targetValue,
                     'variableID' => $variableID
                 ];
