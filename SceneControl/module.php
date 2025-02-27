@@ -236,26 +236,26 @@ class SceneControl extends IPSModule
                 }
                 $valueExists = array_key_exists($i - 1, $sceneData) && array_key_exists($value['GUID'], $sceneData[$i - 1]);
                 $targetValue = json_encode($valueExists ? (is_array($sceneData[$i - 1][$value['GUID']]) ? $sceneData[$i - 1][$value['GUID']]['value'] : $sceneData[$i - 1][$value['GUID']]) : GetValue($variableID));
-                $ignoreValue =  $valueExists ? (is_array($sceneData[$i - 1][$value['GUID']]) ? $sceneData[$i - 1][$value['GUID']]['ignore'] : false) : false;
+                $ignoreValue = $valueExists ? (is_array($sceneData[$i - 1][$value['GUID']]) ? $sceneData[$i - 1][$value['GUID']]['ignore'] : false) : false;
                 $selectTargets[] =
                     [
-                        'type' => 'RowLayout',
+                        'type'  => 'RowLayout',
                         'items' => [
                             [
-                                'type' => 'Select',
+                                'type'    => 'Select',
                                 'options' => [
                                     [
                                         'caption' => 'Set Value',
-                                        'value' => false,
+                                        'value'   => false,
                                     ],
                                     [
                                         'caption' => 'Ignore',
-                                        'value' => true,
+                                        'value'   => true,
                                     ]
                                 ],
-                                'value' => $ignoreValue,
-                                'name' => 'Scene' . $i . 'ID' . $variableID . 'IGNORE',
-                                'width' => '125px',
+                                'value'    => $ignoreValue,
+                                'name'     => 'Scene' . $i . 'ID' . $variableID . 'IGNORE',
+                                'width'    => '125px',
                                 'onChange' => 'SZS_UpdateVisibility($id, ' . '"Scene' . $i . 'ID' . $variableID . '", $Scene' . $i . 'ID' . $variableID . 'IGNORE);'
 
                             ],
@@ -265,11 +265,10 @@ class SceneControl extends IPSModule
                                 'caption'    => IPS_GetLocation($variableID),
                                 'value'      => $targetValue,
                                 'variableID' => $variableID,
-                                'visible' => !$ignoreValue,
+                                'visible'    => !$ignoreValue,
                             ]
                         ]
-                    ]
-                ;
+                    ];
                 $dataNames[] = '$Scene' . $i . 'ID' . $variableID;
                 $ignoreNames[] = '$Scene' . $i . 'ID' . $variableID . 'IGNORE';
                 $sceneGuids[] = $value['GUID'];
@@ -372,8 +371,6 @@ class SceneControl extends IPSModule
             // Fallback for new values and transferring new ones
             $data[$target['GUID']] = ['value' => GetValue($VarID), 'ignore' => false];
         }
-
-
 
         $sceneData[$i - 1] = $data;
 
