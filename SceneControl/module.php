@@ -13,6 +13,7 @@ class SceneControl extends IPSModule
         //Properties
         $this->RegisterPropertyInteger('SceneCount', 5);
         $this->RegisterPropertyString('Targets', '[]');
+        $this->RegisterPropertyBoolean('OverwriteValue', false);
         //Attributes
         $this->RegisterAttributeString('SceneData', '[]');
         //Timer
@@ -205,13 +206,13 @@ class SceneControl extends IPSModule
     {
         $this->SendDebug('New Value', json_encode($Targets), 0);
         $form = json_decode($this->GetConfigurationForm(), true);
-        $this->UpdateFormField('Targets', 'columns', json_encode($form['elements'][1]['columns']));
+        $this->UpdateFormField('Targets', 'columns', json_encode($form['elements'][2]['columns']));
     }
 
     public function GetConfigurationForm()
     {
         $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
-        $form['elements'][1]['columns'][0]['add'] = $this->generateGUID();
+        $form['elements'][2]['columns'][0]['add'] = $this->generateGUID();
 
         // //generate the Lists for the action section
         $targets = json_decode($this->ReadPropertyString('Targets'), true);
@@ -396,7 +397,7 @@ class SceneControl extends IPSModule
                 $id = $this->getVariable($guid);
                 if (IPS_VariableExists($id)) {
                     $v = IPS_GetVariable($id);
-                    if (GetValue($id) == $value) {
+                    if (!$this->ReadPropertyBoolean('OverwriteValue') && GetValue($id) == $value) {
                         continue;
                     }
                     if ($v['VariableCustomAction'] > 0) {
