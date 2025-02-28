@@ -255,15 +255,14 @@ class SceneControl extends IPSModule
                                     ]
                                 ],
                                 'value'    => $ignoreValue,
+                                'caption'  => IPS_GetLocation($variableID),
                                 'name'     => 'Scene' . $i . 'ID' . $variableID . 'IGNORE',
-                                'width'    => '125px',
                                 'onChange' => 'SZS_UpdateVisibility($id, ' . '"Scene' . $i . 'ID' . $variableID . '", $Scene' . $i . 'ID' . $variableID . 'IGNORE);'
 
                             ],
                             [
                                 'type'       => 'SelectValue',
                                 'name'       => 'Scene' . $i . 'ID' . $variableID,
-                                'caption'    => IPS_GetLocation($variableID),
                                 'value'      => $targetValue,
                                 'variableID' => $variableID,
                                 'visible'    => !$ignoreValue,
