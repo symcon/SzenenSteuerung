@@ -67,7 +67,7 @@ class SzenenSteuerungIgnoreMigrationTest extends TestCase
         $this->assertEquals(42, GetValue($vid1));
         $this->assertEquals(24, GetValue($vid2));
         $this->assertEquals(json_encode($oldData), $intf->GetAttribute('SceneData'));
-        
+
         //Set new values
         SetValue($vid1, 12);
         SetValue($vid2, 34);
@@ -75,10 +75,10 @@ class SzenenSteuerungIgnoreMigrationTest extends TestCase
         $intf->SaveScene(1);
         $newData = [
             [
-                1 => ['value' =>12, 'ignore' => false,],
-                2 => ['value' =>34, 'ignore' => false,],
-                ]
-            ];
+                1 => ['value' => 12, 'ignore' => false],
+                2 => ['value' => 34, 'ignore' => false],
+            ]
+        ];
         $intf->CallScene(1);
         $this->assertEquals(json_encode($newData), $intf->GetAttribute('SceneData'));
         SetValue($vid1, 1);
