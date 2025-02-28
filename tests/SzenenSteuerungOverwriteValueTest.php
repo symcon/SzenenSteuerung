@@ -33,9 +33,9 @@ class SzenenSteuerungOverwriteValueTest extends TestCase
         //Creating SzenenSteuerungs instance with custom settings
         $iid = IPS_CreateInstance($this->szenenSteuerungID);
         IPS_SetConfiguration($iid, json_encode([
-            'SceneCount' => 1,
+            'SceneCount'     => 1,
             'OverwriteValue' => false,
-            'Targets'    => json_encode([
+            'Targets'        => json_encode([
                 [
                     'VariableID'   => $vid1,
                     'GUID'         => 1
@@ -53,12 +53,12 @@ class SzenenSteuerungOverwriteValueTest extends TestCase
         SetValue($vid1, 42);
         $intf->SaveScene(1);
         $this->assertEquals(42, GetValue($vid1));
-        
+
         //Change the value and call the saved scene
         SetValue($vid1, 12);
         $this->assertEquals(12, GetValue($vid1));
         $intf->CallScene(1);
-        
+
         //Call the scene again and check if the value updated
         $lastUpdate = IPS_GetVariable($vid1)['VariableUpdated'];
         //Wait at least 2 seconds 1 might not be enough
@@ -66,7 +66,7 @@ class SzenenSteuerungOverwriteValueTest extends TestCase
         $intf->CallScene(1);
         $this->assertEquals($lastUpdate, IPS_GetVariable($vid1)['VariableUpdated']);
 
-        //Enable overwriting 
+        //Enable overwriting
         $intf->SetProperty('OverwriteValue', true);
         $intf->ApplyChanges();
         $intf->CallScene(1);
