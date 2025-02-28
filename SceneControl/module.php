@@ -13,6 +13,7 @@ class SceneControl extends IPSModule
         //Properties
         $this->RegisterPropertyInteger('SceneCount', 5);
         $this->RegisterPropertyString('Targets', '[]');
+        $this->RegisterPropertyBoolean('OverwriteValue', false);
         //Attributes
         $this->RegisterAttributeString('SceneData', '[]');
         //Timer
@@ -205,13 +206,13 @@ class SceneControl extends IPSModule
     {
         $this->SendDebug('New Value', json_encode($Targets), 0);
         $form = json_decode($this->GetConfigurationForm(), true);
-        $this->UpdateFormField('Targets', 'columns', json_encode($form['elements'][1]['columns']));
+        $this->UpdateFormField('Targets', 'columns', json_encode($form['elements'][2]['columns']));
     }
 
     public function GetConfigurationForm()
     {
         $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
-        $form['elements'][1]['columns'][0]['add'] = $this->generateGUID();
+        $form['elements'][2]['columns'][0]['add'] = $this->generateGUID();
 
         // //generate the Lists for the action section
         $targets = json_decode($this->ReadPropertyString('Targets'), true);
@@ -225,6 +226,7 @@ class SceneControl extends IPSModule
         for ($i = 1; $i <= $sceneCount; $i++) {
             $selectTargets = [];
             $dataNames = [];
+            $ignoreNames = [];
             $sceneGuids = [];
 
             foreach ($targets as $key => $value) {
@@ -233,21 +235,48 @@ class SceneControl extends IPSModule
                 if (!IPS_VariableExists($variableID)) {
                     continue; // Maybe alternativ field
                 }
-                $targetValue = json_encode(array_key_exists($i - 1, $sceneData) && array_key_exists($value['GUID'], $sceneData[$i - 1]) ? $sceneData[$i - 1][$value['GUID']] : GetValue($variableID));
-                $selectTargets[] = [
-                    'type'       => 'SelectValue',
-                    'name'       => 'Scene' . $i . 'ID' . $variableID,
-                    'caption'    => IPS_GetLocation($variableID),
-                    'value'      => $targetValue,
-                    'variableID' => $variableID
-                ];
+                $valueExists = array_key_exists($i - 1, $sceneData) && array_key_exists($value['GUID'], $sceneData[$i - 1]);
+                $targetValue = json_encode($valueExists ? (is_array($sceneData[$i - 1][$value['GUID']]) ? $sceneData[$i - 1][$value['GUID']]['value'] : $sceneData[$i - 1][$value['GUID']]) : GetValue($variableID));
+                $ignoreValue = $valueExists ? (is_array($sceneData[$i - 1][$value['GUID']]) ? $sceneData[$i - 1][$value['GUID']]['ignore'] : false) : false;
+                $selectTargets[] =
+                    [
+                        'type'  => 'RowLayout',
+                        'items' => [
+                            [
+                                'type'    => 'Select',
+                                'options' => [
+                                    [
+                                        'caption' => 'Set Value',
+                                        'value'   => false,
+                                    ],
+                                    [
+                                        'caption' => 'Ignore',
+                                        'value'   => true,
+                                    ]
+                                ],
+                                'value'    => $ignoreValue,
+                                'caption'  => IPS_GetLocation($variableID),
+                                'name'     => 'Scene' . $i . 'ID' . $variableID . 'IGNORE',
+                                'onChange' => 'SZS_UpdateVisibility($id, ' . '"Scene' . $i . 'ID' . $variableID . '", $Scene' . $i . 'ID' . $variableID . 'IGNORE);'
+
+                            ],
+                            [
+                                'type'       => 'SelectValue',
+                                'name'       => 'Scene' . $i . 'ID' . $variableID,
+                                'value'      => $targetValue,
+                                'variableID' => $variableID,
+                                'visible'    => !$ignoreValue,
+                            ]
+                        ]
+                    ];
                 $dataNames[] = '$Scene' . $i . 'ID' . $variableID;
+                $ignoreNames[] = '$Scene' . $i . 'ID' . $variableID . 'IGNORE';
                 $sceneGuids[] = $value['GUID'];
             }
             $selectTargets[] = [
                 'type'       => 'Button',
                 'caption'    => $this->Translate('Save'),
-                'onClick'    => 'SZS_SaveSceneEx($id, ' . $i . ', ' . json_encode($dataNames, JSON_UNESCAPED_SLASHES) . ', ' . json_encode($sceneGuids) . ');'
+                'onClick'    => 'SZS_SaveSceneEx($id, ' . $i . ', ' . json_encode($dataNames, JSON_UNESCAPED_SLASHES) . ', ' . json_encode($ignoreNames, JSON_UNESCAPED_SLASHES) . ', ' . json_encode($sceneGuids) . ');'
             ];
             $actions[$i] = [
                 'type'    => 'ExpansionPanel',
@@ -262,9 +291,10 @@ class SceneControl extends IPSModule
         return json_encode($form);
     }
 
-    public function SaveSceneEx(int $sceneNumber, array $sceneValues, array $sceneGuids): bool
+    public function SaveSceneEx(int $sceneNumber, array $sceneValues, array $ignoreValues, array $sceneGuids): bool
     {
         $unsavedData = array_combine($sceneGuids, $sceneValues);
+        $ignoreList = array_combine($sceneGuids, $ignoreValues);
         //fix datatype
         foreach ($unsavedData as $guid => $value) {
             $id = $this->getVariable($guid);
@@ -278,7 +308,7 @@ class SceneControl extends IPSModule
                 2 => floatval($value),
                 3 => trim($value, '"'),
             };
-            $unsavedData[$guid] = $value;
+            $unsavedData[$guid] = ['value' => $value, 'ignore' => boolval($ignoreList[$guid])];
         }
         $sceneData = json_decode($this->ReadAttributeString('SceneData'), true);
 
@@ -286,6 +316,11 @@ class SceneControl extends IPSModule
         $sceneData[$sceneNumber - 1] = $unsavedData;
         $this->WriteAttributeString('SceneData', json_encode($sceneData));
         return true;
+    }
+
+    public function UpdateVisibility($Field, $Hidden)
+    {
+        $this->UpdateFormField($Field, 'visible', !$Hidden);
     }
 
     private function generateGUID()
@@ -319,17 +354,23 @@ class SceneControl extends IPSModule
 
         $targets = json_decode($this->ReadPropertyString('Targets'), true);
 
+        $sceneData = json_decode($this->ReadAttributeString('SceneData'), true);
+        $i = (int) filter_var($sceneIdent, FILTER_SANITIZE_NUMBER_INT);
         foreach ($targets as $target) {
             $VarID = $target['VariableID'];
             if (!IPS_VariableExists($VarID)) {
                 continue;
             }
-            $data[$target['GUID']] = GetValue($VarID);
+            // We need to get the ignore value from the attribute to not override it
+            if (isset($sceneData[$i - 1][$target['GUID']])) {
+                if (is_array($sceneData[$i - 1][$target['GUID']])) {
+                    $data[$target['GUID']] = ['value' => GetValue($VarID), 'ignore' => $sceneData[$i - 1][$target['GUID']]['ignore']];
+                    continue;
+                }
+            }
+            // Fallback for new values and transferring new ones
+            $data[$target['GUID']] = ['value' => GetValue($VarID), 'ignore' => false];
         }
-
-        $sceneData = json_decode($this->ReadAttributeString('SceneData'));
-
-        $i = (int) filter_var($sceneIdent, FILTER_SANITIZE_NUMBER_INT);
 
         $sceneData[$i - 1] = $data;
 
@@ -346,10 +387,16 @@ class SceneControl extends IPSModule
 
         if (count($data) > 0) {
             foreach ($data as $guid => $value) {
+                if (is_array($value)) {
+                    if ($value['ignore']) {
+                        continue;
+                    }
+                    $value = $value['value'];
+                }
                 $id = $this->getVariable($guid);
                 if (IPS_VariableExists($id)) {
                     $v = IPS_GetVariable($id);
-                    if (GetValue($id) == $value) {
+                    if (!$this->ReadPropertyBoolean('OverwriteValue') && GetValue($id) == $value) {
                         continue;
                     }
                     if ($v['VariableCustomAction'] > 0) {

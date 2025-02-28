@@ -13,7 +13,12 @@
             "'%s' is called": "'%s' wird aufgerufen",
             "Set Scenes": "Setze Szenen",
             "Scene Control": "Szenensteuerung",
-            "https://www.symcon.de/en/service/documentation/module-reference/scene-control/": "https://www.symcon.de/de/service/dokumentation/modulreferenz/szenensteuerung/"
+            "https://www.symcon.de/en/service/documentation/module-reference/scene-control/": "https://www.symcon.de/de/service/dokumentation/modulreferenz/szenensteuerung/",
+            "Set Value": "Wert setzen",
+            "Ignore": "Ignorieren",
+            "Switch Behavior": "Schaltverhalten",
+            "On Change": "Bei Änderung",
+            "Always": "Immer"
         }
     }
 }

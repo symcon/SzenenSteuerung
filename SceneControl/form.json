@@ -7,6 +7,21 @@
             "suffix": "Scenes"
         },
         {
+            "type": "Select",
+            "name": "OverwriteValue",
+            "caption": "Switch Behavior",
+            "options": [
+                {
+                    "caption": "On Change",
+                    "value": false
+                },
+                {
+                    "caption": "Always",
+                    "value": true
+                }
+            ]
+        },
+        {
             "type": "List",
             "name": "Targets",
             "caption": "Variables",
