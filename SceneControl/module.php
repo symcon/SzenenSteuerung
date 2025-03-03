@@ -141,7 +141,7 @@ class SceneControl extends IPSModule
         }
     }
 
-    public function RequestAction(string $Ident, mixed $Value)
+    public function RequestAction($Ident, $Value)
     {
         switch ($Value) {
             case '1':
