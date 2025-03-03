@@ -202,7 +202,7 @@ class SceneControl extends IPSModule
         $this->SetBuffer('UpdateActive', json_encode(true));
     }
 
-    public function AddVariable(array $Targets)
+    public function AddVariable(IPSList $Targets)
     {
         $this->SendDebug('New Value', json_encode($Targets), 0);
         $form = json_decode($this->GetConfigurationForm(), true);
