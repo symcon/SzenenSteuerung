@@ -39,11 +39,11 @@ class SzenenSteuerungIgnoreMigrationTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID'   => $vid1,
-                    'GUID'         => 1
+                    'GUID'         => 'guid1'
                 ],
                 [
                     'VariableID'   => $vid2,
-                    'GUID'         => 2
+                    'GUID'         => 'guid2'
                 ]
             ])
         ]));
@@ -51,14 +51,14 @@ class SzenenSteuerungIgnoreMigrationTest extends TestCase
 
         //Checking if all settings have been adopted
         $this->assertEquals(1, IPS_GetProperty($iid, 'SceneCount'));
-        $this->assertEquals(json_encode([['VariableID' => $vid1, 'GUID' => 1], ['VariableID' => $vid2, 'GUID' => 2]]), IPS_GetProperty($iid, 'Targets'));
+        $this->assertEquals(json_encode([['VariableID' => $vid1, 'GUID' => 'guid1'], ['VariableID' => $vid2, 'GUID' => 'guid2']]), IPS_GetProperty($iid, 'Targets'));
 
         $intf = IPS\InstanceManager::getInstanceInterface($iid);
         $oldData = [
             //Scene 1
             [
-                1 => 42,
-                2 => 24,
+                'guid1' => 42,
+                'guid2' => 24,
             ]
         ];
         $intf->SetAttribute('SceneData', json_encode($oldData));
@@ -75,15 +75,15 @@ class SzenenSteuerungIgnoreMigrationTest extends TestCase
         $intf->SaveScene(1);
         $newData = [
             [
-                1 => ['value' => 12, 'ignore' => false],
-                2 => ['value' => 34, 'ignore' => false],
+                'guid1' => ['value' => 12, 'ignore' => false],
+                'guid2' => ['value' => 34, 'ignore' => false],
             ]
         ];
         $intf->CallScene(1);
         $this->assertEquals(json_encode($newData), $intf->GetAttribute('SceneData'));
         SetValue($vid1, 1);
         SetValue($vid2, 2);
-        $newData[0][1]['ignore'] = true;
+        $newData[0]['guid1']['ignore'] = true;
         $intf->SetAttribute('SceneData', json_encode($newData));
         $intf->CallScene(1);
         $this->assertEquals(1, GetValue($vid1));

@@ -38,7 +38,7 @@ class SzenenSteuerungOverwriteValueTest extends TestCase
             'Targets'        => json_encode([
                 [
                     'VariableID'   => $vid1,
-                    'GUID'         => 1
+                    'GUID'         => 'guid1'
                 ],
             ])
         ]));
@@ -46,7 +46,7 @@ class SzenenSteuerungOverwriteValueTest extends TestCase
 
         //Checking if all settings have been adopted
         $this->assertEquals(1, IPS_GetProperty($iid, 'SceneCount'));
-        $this->assertEquals(json_encode([['VariableID' => $vid1, 'GUID' => 1]]), IPS_GetProperty($iid, 'Targets'));
+        $this->assertEquals(json_encode([['VariableID' => $vid1, 'GUID' => 'guid1']]), IPS_GetProperty($iid, 'Targets'));
 
         $intf = IPS\InstanceManager::getInstanceInterface($iid);
         //Set a value and save the scene

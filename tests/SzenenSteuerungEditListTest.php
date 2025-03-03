@@ -39,7 +39,7 @@ class SzenenSteuerungEditListTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID'   => $variableA,
-                    'GUID'         => 1
+                    'GUID'         => 'guid1'
                 ]
             ])
         ]));
@@ -47,7 +47,7 @@ class SzenenSteuerungEditListTest extends TestCase
 
         //Checking if all settings have been adopted
         $this->assertEquals(1, IPS_GetProperty($iid, 'SceneCount'));
-        $this->assertEquals(json_encode([['VariableID' => $variableA, 'GUID' => 1]]), IPS_GetProperty($iid, 'Targets'));
+        $this->assertEquals(json_encode([['VariableID' => $variableA, 'GUID' => 'guid1']]), IPS_GetProperty($iid, 'Targets'));
 
         $intf = IPS\InstanceManager::getInstanceInterface($iid);
 
@@ -64,7 +64,7 @@ class SzenenSteuerungEditListTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID'   => $variableB,
-                    'GUID'         => 1
+                    'GUID'         => 'guid1'
                 ]
             ])
         ]));
@@ -94,11 +94,11 @@ class SzenenSteuerungEditListTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID'   => $variableA,
-                    'GUID'         => 1
+                    'GUID'         => 'guid1'
                 ],
                 [
                     'VariableID'   => $variableB,
-                    'GUID'         => 2
+                    'GUID'         => 'guid2'
                 ]
             ])
         ]));
@@ -126,7 +126,7 @@ class SzenenSteuerungEditListTest extends TestCase
             'Targets'    => json_encode([
                 [
                     'VariableID'   => $variableB,
-                    'GUID'         => 2
+                    'GUID'         => 'guid2'
                 ]
             ])
         ]));
