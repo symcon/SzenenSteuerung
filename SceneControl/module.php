@@ -178,6 +178,12 @@ class SceneControl extends IPSModule
         $sceneID = -1;
         for ($i = 0; $i < $sceneCount; $i++) {
             foreach ($scenes[$i] as $guid => $value) {
+                if (is_array($value)) {
+                    if ($value['ignore']) {
+                        continue;
+                    }
+                    $value = $value['value'];
+                }
                 $variableID = $this->getVariable($guid);
                 $sceneID = $i;
                 if (IPS_VariableExists($variableID)) {
