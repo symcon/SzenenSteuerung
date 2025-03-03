@@ -134,7 +134,7 @@ class SceneControl extends IPSModule
         $this->SetValue('ActiveScene', $this->getSceneName($this->GetActiveScene()));
     }
 
-    public function MessageSink(int $TimeStamp, int $SenderID, $Message, $Data)
+    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
         if ($Message == VM_UPDATE && json_decode($this->GetBuffer('UpdateActive'))) {
             $this->SetValue('ActiveScene', $this->getSceneName($this->GetActiveScene()));
