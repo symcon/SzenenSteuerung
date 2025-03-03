@@ -134,14 +134,14 @@ class SceneControl extends IPSModule
         $this->SetValue('ActiveScene', $this->getSceneName($this->GetActiveScene()));
     }
 
-    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    public function MessageSink(int $TimeStamp, int $SenderID, $Message, $Data)
     {
         if ($Message == VM_UPDATE && json_decode($this->GetBuffer('UpdateActive'))) {
             $this->SetValue('ActiveScene', $this->getSceneName($this->GetActiveScene()));
         }
     }
 
-    public function RequestAction($Ident, $Value)
+    public function RequestAction(string $Ident, mixed $Value)
     {
         switch ($Value) {
             case '1':
@@ -202,7 +202,7 @@ class SceneControl extends IPSModule
         $this->SetBuffer('UpdateActive', json_encode(true));
     }
 
-    public function AddVariable($Targets)
+    public function AddVariable(array $Targets)
     {
         $this->SendDebug('New Value', json_encode($Targets), 0);
         $form = json_decode($this->GetConfigurationForm(), true);
@@ -257,7 +257,7 @@ class SceneControl extends IPSModule
                                 'value'    => $ignoreValue,
                                 'caption'  => IPS_GetLocation($variableID),
                                 'name'     => 'Scene' . $i . 'ID' . $variableID . 'IGNORE',
-                                'onChange' => 'SZS_UpdateVisibility($id, ' . '"Scene' . $i . 'ID' . $variableID . '", $Scene' . $i . 'ID' . $variableID . 'IGNORE);'
+                                'onChange' => 'SZS_UIUpdateVisibility($id, ' . '"Scene' . $i . 'ID' . $variableID . '", $Scene' . $i . 'ID' . $variableID . 'IGNORE);'
 
                             ],
                             [
@@ -318,7 +318,7 @@ class SceneControl extends IPSModule
         return true;
     }
 
-    public function UpdateVisibility($Field, $Hidden)
+    public function UIUpdateVisibility(string $Field, bool $Hidden)
     {
         $this->UpdateFormField($Field, 'visible', !$Hidden);
     }
@@ -328,7 +328,7 @@ class SceneControl extends IPSModule
         return sprintf('{%04X%04X-%04X-%04X-%04X-%04X%04X%04X}', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
     }
 
-    private function getVariable($guid)
+    private function getVariable(string $guid)
     {
         $targets = json_decode($this->ReadPropertyString('Targets'), true);
         foreach ($targets as $target) {
@@ -339,7 +339,7 @@ class SceneControl extends IPSModule
         return 0;
     }
 
-    private function getSceneName($sceneID)
+    private function getSceneName(int $sceneID)
     {
         if ($sceneID != 0) {
             return IPS_GetName($this->GetIDForIdent("Scene$sceneID"));
@@ -348,7 +348,7 @@ class SceneControl extends IPSModule
         }
     }
 
-    private function SaveValues($sceneIdent)
+    private function SaveValues(string $sceneIdent)
     {
         $data = [];
 
@@ -377,7 +377,7 @@ class SceneControl extends IPSModule
         $this->WriteAttributeString('SceneData', json_encode($sceneData));
     }
 
-    private function CallValues($sceneIdent)
+    private function CallValues(string $sceneIdent)
     {
         $sceneData = json_decode($this->ReadAttributeString('SceneData'), true);
 
