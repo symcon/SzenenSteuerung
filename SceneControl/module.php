@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 include_once __DIR__ . '/attributes.php';
+include_once __DIR__ . '/timetest.php';
 class SceneControl extends IPSModule
 {
     use Attributes;
+    use TestTime;
     public function Create()
     {
         //Never delete this line!
