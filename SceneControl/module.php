@@ -16,6 +16,7 @@ class SceneControl extends IPSModule
         $this->RegisterPropertyInteger('SceneCount', 5);
         $this->RegisterPropertyString('Targets', '[]');
         $this->RegisterPropertyBoolean('OverwriteValue', false);
+        $this->RegisterPropertyInteger('SwitchingDelay', 0);
         //Attributes
         $this->RegisterAttributeString('SceneData', '[]');
         //Timer
@@ -418,6 +419,9 @@ class SceneControl extends IPSModule
                     }
 
                     RequestAction($id, $value);
+                    if ($this->ReadPropertyInteger('SwitchingDelay') > 0) {
+                        IPS_Sleep($this->ReadPropertyInteger('SwitchingDelay'));
+                    }
                 }
             }
         } else {

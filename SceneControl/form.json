@@ -7,17 +7,28 @@
             "suffix": "Scenes"
         },
         {
-            "type": "Select",
-            "name": "OverwriteValue",
-            "caption": "Switch Behavior",
-            "options": [
+            "type": "RowLayout",
+            "items": [
                 {
-                    "caption": "On Change",
-                    "value": false
+                    "type": "Select",
+                    "name": "OverwriteValue",
+                    "caption": "Switch Behavior",
+                    "options": [
+                        {
+                            "caption": "On Change",
+                            "value": false
+                        },
+                        {
+                            "caption": "Always",
+                            "value": true
+                        }
+                    ]
                 },
                 {
-                    "caption": "Always",
-                    "value": true
+                    "type": "NumberSpinner",
+                    "caption": "Switching Delay",
+                    "name": "SwitchingDelay",
+                    "suffix": "ms"
                 }
             ]
         },
@@ -29,6 +40,7 @@
             "onAdd": "SZS_AddVariable($id, $Targets);",
             "delete": true,
             "changeOrder": true,
+            "rowCount": 20,
             "columns": [
                 {
                     "caption": "GUID",

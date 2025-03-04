@@ -18,7 +18,8 @@
             "Ignore": "Ignorieren",
             "Switch Behavior": "Schaltverhalten",
             "On Change": "Bei Änderung",
-            "Always": "Immer"
+            "Always": "Immer",
+            "Switching Delay": "Schaltverzögerung"
         }
     }
 }
