@@ -214,14 +214,19 @@ class SceneControl extends IPSModule
     public function AddVariable(IPSList $Targets)
     {
         $this->SendDebug('New Value', json_encode($Targets), 0);
-        $form = json_decode($this->GetConfigurationForm(), true);
-        $this->UpdateFormField('Targets', 'columns', json_encode($form['elements'][2]['columns']));
+        $values = [];
+        foreach ($Targets as $target) {
+            if (!isset($target['GUID']) || $target['GUID'] === '') {
+                $target['GUID'] = $this->generateGUID();
+            }
+            $values[] = $target;
+        }
+        $this->UpdateFormField('Targets', 'values', json_encode($values));
     }
 
     public function GetConfigurationForm()
     {
         $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
-        $form['elements'][2]['columns'][0]['add'] = $this->generateGUID();
 
         // //generate the Lists for the action section
         $targets = json_decode($this->ReadPropertyString('Targets'), true);
