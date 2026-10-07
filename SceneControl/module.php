@@ -244,7 +244,7 @@ class SceneControl extends IPSModule
             $sceneGuids = [];
 
             foreach ($targets as $key => $value) {
-                $this->SendDebug($key, print_r($value, true), 0);
+                $this->SendDebug((string) $key, print_r($value, true), 0);
                 $variableID = $value['VariableID'];
                 if (!IPS_VariableExists($variableID)) {
                     continue; // Maybe alternativ field
@@ -320,7 +320,7 @@ class SceneControl extends IPSModule
                 0 => $value == 'true',
                 1 => intval($value),
                 2 => floatval($value),
-                3 => trim($value, '"'),
+                3 => json_decode($value),
             };
             $unsavedData[$guid] = ['value' => $value, 'ignore' => boolval($ignoreList[$guid])];
         }
