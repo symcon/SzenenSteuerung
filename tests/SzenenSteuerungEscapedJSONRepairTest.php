@@ -38,10 +38,13 @@ class SzenenSteuerungEscapedJSONRepairTest extends TestCase
         $textVariable = IPS_CreateVariable(3 /* String */);
         IPS_SetVariableCustomAction($textVariable, $sid);
         SetValue($textVariable, 'Küche');
-        //Text variable which really holds escaped JSON
-        $escapedVariable = IPS_CreateVariable(3 /* String */);
-        IPS_SetVariableCustomAction($escapedVariable, $sid);
-        SetValue($escapedVariable, '{\"a\":1}');
+        //Color variable which got the escaped value by calling a broken scene
+        $brokenColorVariable = IPS_CreateVariable(3 /* String */);
+        IPS_SetVariableCustomAction($brokenColorVariable, $sid);
+        SetValue($brokenColorVariable, $this->saveInOldForm('{"x":0.4,"y":0.5}', 1));
+        //Color variable without a value, e.g. as the lamp is not reachable
+        $emptyColorVariable = IPS_CreateVariable(3 /* String */);
+        IPS_SetVariableCustomAction($emptyColorVariable, $sid);
 
         //Creating SzenenSteuerungs instance with custom settings
         $iid = IPS_CreateInstance($this->szenenSteuerungID);
@@ -57,8 +60,12 @@ class SzenenSteuerungEscapedJSONRepairTest extends TestCase
                     'GUID'         => 'guid2'
                 ],
                 [
-                    'VariableID'   => $escapedVariable,
+                    'VariableID'   => $brokenColorVariable,
                     'GUID'         => 'guid3'
+                ],
+                [
+                    'VariableID'   => $emptyColorVariable,
+                    'GUID'         => 'guid4'
                 ]
             ])
         ]));
@@ -69,12 +76,14 @@ class SzenenSteuerungEscapedJSONRepairTest extends TestCase
         $red = '{"r":255,"g":0,"b":0}';
         $green = '{"r":0,"g":255,"b":0}';
         $blue = '{"r":0,"g":0,"b":255}';
+        $xy = '{"x":0.3,"y":0.6}';
         $brokenData = [
             //Scene 1
             [
                 'guid1' => ['value' => $this->saveInOldForm($red, 1), 'ignore' => false],
                 'guid2' => ['value' => $this->saveInOldForm('Küche', 1), 'ignore' => false],
-                'guid3' => ['value' => '{\"a\":1}', 'ignore' => false],
+                'guid3' => ['value' => $this->saveInOldForm($xy, 1), 'ignore' => false],
+                'guid4' => ['value' => $this->saveInOldForm($xy, 2), 'ignore' => false],
             ],
             //Scene 2
             [
@@ -93,6 +102,8 @@ class SzenenSteuerungEscapedJSONRepairTest extends TestCase
         //Only the escaped color values are repaired
         $repairedData = $brokenData;
         $repairedData[0]['guid1']['value'] = $red;
+        $repairedData[0]['guid3']['value'] = $xy;
+        $repairedData[0]['guid4']['value'] = $xy;
         $repairedData[1]['guid1']['value'] = $green;
         $this->assertEquals($repairedData, json_decode($intf->GetAttribute('SceneData'), true));
 
@@ -100,12 +111,14 @@ class SzenenSteuerungEscapedJSONRepairTest extends TestCase
         IPS_ApplyChanges($iid);
         $this->assertEquals($repairedData, json_decode($intf->GetAttribute('SceneData'), true));
 
-        //Calling the scene sets the repaired color
+        //Calling the scene sets the repaired colors
         $intf->CallScene(1);
         $this->assertEquals($red, GetValue($colorVariable));
+        $this->assertEquals($xy, GetValue($brokenColorVariable));
+        $this->assertEquals($xy, GetValue($emptyColorVariable));
     }
 
-    public function testNoRepairForVariableWithoutJSON()
+    public function testNoRepairForTextVariable()
     {
         //Setting up a variable with ActionScript
         $sid = IPS_CreateScript(0 /* PHP */);
@@ -129,7 +142,7 @@ class SzenenSteuerungEscapedJSONRepairTest extends TestCase
 
         $intf = IPS\InstanceManager::getInstanceInterface($iid);
 
-        //Escaped JSON is kept as long as the variable itself does not hold JSON
+        //Escaped JSON is kept as the variable holds plain text
         $data = [
             [
                 'guid1' => ['value' => '{\"a\":1}', 'ignore' => false],

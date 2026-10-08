@@ -112,9 +112,13 @@ class SceneControl extends IPSModule
                 if (!is_array($value) || !is_string($value['value'])) {
                     continue;
                 }
-                //Only touch variables which hold JSON themselves
+                //Never touch variables holding plain text, only JSON (escaped as well, as calling a broken scene sets it) or nothing at all
                 $variableID = $this->getVariable($guid);
-                if (!IPS_VariableExists($variableID) || IPS_GetVariable($variableID)['VariableType'] != 3 || !is_array(json_decode(GetValue($variableID), true))) {
+                if (!IPS_VariableExists($variableID) || IPS_GetVariable($variableID)['VariableType'] != 3) {
+                    continue;
+                }
+                $currentValue = GetValue($variableID);
+                if ($currentValue !== '' && !is_array(json_decode($this->repairEscapedJSON($currentValue), true))) {
                     continue;
                 }
                 $scenes[$index][$guid]['value'] = $this->repairEscapedJSON($value['value']);
