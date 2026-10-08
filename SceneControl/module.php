@@ -105,6 +105,21 @@ class SceneControl extends IPSModule
                 }
             }
         }
+
+        //Repair JSON values (e.g. colors) which got escaped when saved in the configuration form by older versions
+        foreach ($scenes as $index => $scene) {
+            foreach ($scene as $guid => $value) {
+                if (!is_array($value) || !is_string($value['value'])) {
+                    continue;
+                }
+                //Only touch variables which hold JSON themselves
+                $variableID = $this->getVariable($guid);
+                if (!IPS_VariableExists($variableID) || IPS_GetVariable($variableID)['VariableType'] != 3 || !is_array(json_decode(GetValue($variableID), true))) {
+                    continue;
+                }
+                $scenes[$index][$guid]['value'] = $this->repairEscapedJSON($value['value']);
+            }
+        }
         $this->WriteAttributeString('SceneData', json_encode($scenes));
 
         //Reload if there were any changes
@@ -340,6 +355,21 @@ class SceneControl extends IPSModule
     private function generateGUID()
     {
         return sprintf('{%04X%04X-%04X-%04X-%04X-%04X%04X%04X}', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
+    }
+
+    private function repairEscapedJSON(string $value): string
+    {
+        //Every save in the form added one level of escaping, so remove levels until we get JSON again
+        $repaired = $value;
+        while (!is_array(json_decode($repaired, true))) {
+            $unescaped = json_decode('"' . $repaired . '"');
+            if (!is_string($unescaped) || $unescaped === $repaired) {
+                //Not an escaped JSON value, keep it as it is
+                return $value;
+            }
+            $repaired = $unescaped;
+        }
+        return $repaired;
     }
 
     private function getVariable(string $guid)
