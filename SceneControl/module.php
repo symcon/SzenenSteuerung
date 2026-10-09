@@ -48,7 +48,7 @@ class SceneControl extends IPSModule
         //Add GUID if none set
         $needsReload = false;
         foreach ($targets as $index => $target) {
-            if (!isset($targets[$index]['GUID'])) {
+            if (!isset($targets[$index]['GUID']) || $targets[$index]['GUID'] === '') {
                 $targets[$index]['GUID'] = $this->generateGUID();
                 $needsReload = true;
             }
